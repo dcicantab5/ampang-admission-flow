@@ -14,25 +14,35 @@ function PatientFlowAnalysis() {
   const [showMeanStats, setShowMeanStats] = useState(false);
   const wardOrder = ["W6A", "W6B", "W6C", "W6D"];
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Load pre-processed data for GitHub Pages deployment
-        // This replaces the dynamic data loading from Excel
-        fetch('data.json')
-          .then(response => response.json())
-          .then(data => {
-            setWardStats(data);
-            setLoading(false);
-          });
-      } catch (error) {
-        console.error("Error loading data:", error);
-        setLoading(false);
-      }
-    };
-    
-    loadData();
-  }, []);
+  // In app.js
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      // Use a relative URL with explicit error handling
+      fetch('./data.json')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Data loaded successfully:", data);
+          setWardStats(data);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error("Error fetching data:", error);
+          setLoading(false);
+        });
+    } catch (error) {
+      console.error("Error in loadData function:", error);
+      setLoading(false);
+    }
+  };
+  
+  loadData();
+}, []);
   
   // Prepare data for chart
   const prepareChartData = () => {
