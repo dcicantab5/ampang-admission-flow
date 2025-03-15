@@ -1,97 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ampang Admission Flow Analysis</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- React and ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <!-- Babel for JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- Recharts (Complete package with all components) -->
-  <script src="https://unpkg.com/recharts@2.5.0/umd/Recharts.js"></script>
-  
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-    
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-size: 1.5rem;
-      color: #4a5568;
-    }
-    
-    .error-message {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: #e53e3e;
-      text-align: center;
-      padding: 0 20px;
-    }
-    
-    .tooltip {
-      background-color: white;
-      border: 1px solid #e2e8f0;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ampang Admission Flow Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom styles -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+        .dashboard-header {
+            padding: 20px 0;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .dashboard-title {
+            color: #0d6efd;
+            margin-bottom: 10px;
+        }
+        .dashboard-subtitle {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            font-weight: 600;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        .summary-card {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+        .summary-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        #error-message {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .findings-card {
+            background-color: #f8f9fa;
+        }
+        .recommendations-card {
+            background-color: #e7f5fe;
+        }
+        .stat-test-card {
+            background-color: #f8f9fa;
+        }
+        footer {
+            margin-top: 20px;
+            padding: 15px 0;
+            background-color: #343a40;
+            color: #fff;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+        }
+        .small-note {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
-  <div id="root">
-    <div class="loading">Loading analysis data...</div>
-  </div>
-  
-  <script>
-    // Error handling for script loading
-    window.addEventListener('error', function(e) {
-      if (e.filename && (e.filename.includes('react') || e.filename.includes('recharts'))) {
-        document.getElementById('root').innerHTML = 
-          '<div class="error-message">' +
-          '<h2>Error Loading Resources</h2>' +
-          '<p>There was a problem loading the required libraries. Please check your internet connection and try again.</p>' +
-          '<p>Technical details: ' + e.message + '</p>' +
-          '</div>';
-      }
-    }, true);
-    
-    // Make Recharts components globally available for app.js
-    window.Recharts = Recharts;
-  </script>
-  
-  <!-- Load and process app.js with Babel -->
-  <script type="text/babel" data-type="module" src="./app.js"></script>
-  
-  <script>
-    // Fallback if app.js fails to load
-    setTimeout(function() {
-      if (document.querySelector('.loading')) {
-        document.getElementById('root').innerHTML = 
-          '<div class="error-message">' +
-          '<h2>Loading Timeout</h2>' +
-          '<p>The application took too long to load. This could be due to network issues or problems with the data file.</p>' +
-          '<p>Please try refreshing the page. If the problem persists, check that data.json exists in the repository.</p>' +
-          '</div>';
-      }
-    }, 10000); // 10-second timeout
-  </script>
-</body>
-</html>
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="row dashboard-header">
+            <div class="col-md-8">
+                <h1 class="dashboard-title" id="dashboard-title">Ampang Admission Flow Analysis</h1>
+                <p class="dashboard-subtitle">Hospital Admission Flow Patterns and Statistics</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex flex-column align-items-end">
+                    <p class="mb-1"><strong>Generated:</strong> <span id="generated-date">Loading...</span></p>
+                    <p class="mb-0"><strong>Source:</strong> <span id="data-source">Loading...</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="error-message" class="alert alert-danger"></div>
+        
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="summary-card text-center">
+                    <div class="summary-number" id="total-patients">0</div>
+                    <div class="summary-label">Total Patients</div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Ward Distribution</div>
+                    <ul class="list-group list-group-flush" id="ward-breakdown">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Loading...
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills mb-4" id="dashboard-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="patient-flow-tab" data-bs-toggle="pill" data-bs-target="#patient-flow" type="button" role="tab">Patient Flow</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="time-analysis-tab" data-bs-toggle="pill" data-bs-target="#time-analysis" type="button" role="tab">Time Analysis</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recommendations-tab" data-bs-toggle="pill" data-bs-target="#recommendations" type="button" role="tab">Recommendations</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="statistics-tab" data-bs-toggle="pill" data-bs-target="#statistics" type="button" role="tab">Statistics</button>
+            </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="dashboard-tabContent">
+            <!-- Patient Flow Tab -->
+            <div class="tab-pane fade show active" id="patient-flow" role="tabpanel">
+                <div class="row">
+                    <!-- Ward Count Chart -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Patient Distribution</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="ward-count-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ETD Time Chart -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">ETD Time by Ward</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="etd-time-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">ETD = Emergency to Discharge/Transfer Time</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transfer Time Chart -->
+                    <div class="col-md-6">
+                        <div class="card mt-4">
+                            <div class="card-header">Transfer Time by Ward</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="transfer-time-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">Time from transfer decision to actual transfer</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hourly Distribution Chart -->
+                    <div class="col-md-6">
+                        <div class="card mt-4">
+                            <div class="card-header">24-hour Patient Flow</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="hourly-distribution-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">Patient flow patterns throughout the day</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Time Analysis Tab -->
+            <div class="tab-pane fade" id="time-analysis" role="tabpanel">
+                <div class="row">
+                    <!-- Peak Hours Chart -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Peak Hours by Ward</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="peak-hours-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">Top 3 peak hours for each ward</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Circular Stats Chart -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Circular Statistics</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="circular-stats-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">Mean hour and concentration of admission times</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Circular Stats Explanation -->
+                    <div class="col-md-12 mt-4">
+                        <div class="card">
+                            <div class="card-header">Understanding Circular Statistics</div>
+                            <div class="card-body">
+                                <p>Circular statistics analyze time-of-day patterns, treating time as a circular variable.</p>
+                                <ul>
+                                    <li><strong>Mean Hour:</strong> Average hour of patient arrivals</li>
+                                    <li><strong>Concentration (r):</strong> Measure of how concentrated arrivals are around the mean hour (0-1 scale)</li>
+                                    <li><strong>Rayleigh Test:</strong> Statistical test for non-uniformity of circular data</li>
+                                    <li><strong>Circular Variance:</strong> Measure of spread in circular data</li>
+                                </ul>
+                                <p>Higher r-values indicate stronger time-of-day patterns, which can inform staffing decisions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recommendations Tab -->
+            <div class="tab-pane fade" id="recommendations" role="tabpanel">
+                <div class="row">
+                    <!-- Key Findings -->
+                    <div class="col-md-6">
+                        <div class="card findings-card">
+                            <div class="card-header">Key Findings</div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush" id="key-findings-list">
+                                    <li class="list-group-item">Loading...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recommendations -->
+                    <div class="col-md-6">
+                        <div class="card recommendations-card">
+                            <div class="card-header">Recommended Interventions</div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush" id="recommendations-list">
+                                    <li class="list-group-item">Loading...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics Tab -->
+            <div class="tab-pane fade" id="statistics" role="tabpanel">
+                <div class="row">
+                    <!-- Statistical Tests -->
+                    <div class="col-md-12">
+                        <div class="card stat-test-card">
+                            <div class="card-header">Statistical Test Results</div>
+                            <div class="card-body">
+                                <p>The Kruskal-Wallis test was used to compare differences between wards:</p>
+                                
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Metric</th>
+                                            <th>H Statistic</th>
+                                            <th>Degrees of Freedom</th>
+                                            <th>p-value</th>
+                                            <th>Interpretation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>ETD Time</strong></td>
+                                            <td id="etd-test-h">-</td>
+                                            <td id="etd-test-df">-</td>
+                                            <td id="etd-test-p">-</td>
+                                            <td id="etd-test-sig">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Transfer Time</strong></td>
+                                            <td id="transfer-test-h">-</td>
+                                            <td id="transfer-test-df">-</td>
+                                            <td id="transfer-test-p">-</td>
+                                            <td id="transfer-test-sig">-</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <div class="small-note mt-3">
+                                    <p><strong>Note:</strong> The Kruskal-Wallis test is a non-parametric method for comparing independent samples. A p-value less than 0.05 indicates statistically significant differences between the wards.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
