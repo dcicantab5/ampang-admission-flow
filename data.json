@@ -1,0 +1,203 @@
+{
+  "wards": ["W6A", "W6B", "W6C", "W6D"],
+  "wardCounts": {
+    "W6A": 10,
+    "W6B": 16,
+    "W6C": 8,
+    "W6D": 3
+  },
+  "transferTime": {
+    "W6A": {
+      "median": 181.27,
+      "q1": 157.40,
+      "q3": 214.97,
+      "mean": 239.88,
+      "ciLower": 148.35,
+      "ciUpper": 331.42
+    },
+    "W6B": {
+      "median": 196.08,
+      "q1": 163.13,
+      "q3": 237.72,
+      "mean": 221.35,
+      "ciLower": 159.90,
+      "ciUpper": 282.81
+    },
+    "W6C": {
+      "median": 159.50,
+      "q1": 146.00,
+      "q3": 183.00,
+      "mean": 164.50,
+      "ciLower": 146.34,
+      "ciUpper": 182.66
+    },
+    "W6D": {
+      "median": 152.37,
+      "q1": 149.70,
+      "q3": 214.07,
+      "mean": 172.05,
+      "ciLower": 130.84,
+      "ciUpper": 213.26
+    }
+  },
+  "etdTime": {
+    "W6A": {
+      "median": 519.81,
+      "q1": 327.50,
+      "q3": 984.87,
+      "mean": 662.32,
+      "ciLower": 332.85,
+      "ciUpper": 991.79
+    },
+    "W6B": {
+      "median": 443.74,
+      "q1": 151.30,
+      "q3": 2189.28,
+      "mean": 1013.31,
+      "ciLower": 486.35,
+      "ciUpper": 1540.28
+    },
+    "W6C": {
+      "median": 1122.50,
+      "q1": 814.00,
+      "q3": 2282.00,
+      "mean": 1302.38,
+      "ciLower": 576.53,
+      "ciUpper": 2028.22
+    },
+    "W6D": {
+      "median": 1664.38,
+      "q1": 131.65,
+      "q3": 1921.37,
+      "mean": 1239.13,
+      "ciLower": 144.10,
+      "ciUpper": 2334.16
+    }
+  },
+  "timePatterns": {
+    "booktime": [0, 1, 2, 1, 2, 1, 4, 2, 3, 0, 0, 1, 3, 2, 3, 1, 0, 2, 0, 3, 2, 2, 1, 1],
+    "alloctime": [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 6, 1, 4, 2, 4, 2, 1, 9, 3, 0, 0],
+    "regtime": [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 2, 4, 2, 1, 2, 4, 2, 1, 8, 6, 1, 1],
+    "arrtime": [3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 1, 1, 3, 4, 1, 2, 7, 1, 0, 11]
+  },
+  "circularStats": {
+    "booktime": {
+      "meanDirection": 2.37,
+      "meanHour": "09:03",
+      "resultantLength": 0.077,
+      "circularVariance": 0.923,
+      "circularStdDev": 2.26,
+      "rayleighTestStatistic": 0.44,
+      "rayleighPValue": 0.802,
+      "isNonUniform": false,
+      "confidenceInterval": "17:11 - 00:56",
+      "topPeaks": [
+        {"time": "06:00", "relativeStrength": 0.234},
+        {"time": "13:00", "relativeStrength": 0.208},
+        {"time": "20:00", "relativeStrength": 0.185}
+      ]
+    },
+    "alloctime": {
+      "meanDirection": -1.88,
+      "meanHour": "16:50",
+      "resultantLength": 0.547,
+      "circularVariance": 0.453,
+      "circularStdDev": 1.10,
+      "rayleighTestStatistic": 22.16,
+      "rayleighPValue": 0.000015,
+      "isNonUniform": true,
+      "confidenceInterval": "14:57 - 18:43",
+      "topPeaks": [
+        {"time": "20:00", "relativeStrength": 0.369},
+        {"time": "15:00", "relativeStrength": 0.294},
+        {"time": "07:00", "relativeStrength": 0.082}
+      ]
+    },
+    "regtime": {
+      "meanDirection": -1.66,
+      "meanHour": "17:40",
+      "resultantLength": 0.571,
+      "circularVariance": 0.429,
+      "circularStdDev": 1.06,
+      "rayleighTestStatistic": 24.16,
+      "rayleighPValue": 0.0000057,
+      "isNonUniform": true,
+      "confidenceInterval": "15:54 - 19:26",
+      "topPeaks": [
+        {"time": "20:00", "relativeStrength": 0.421},
+        {"time": "14:00", "relativeStrength": 0.224}
+      ]
+    },
+    "arrtime": {
+      "meanDirection": -1.00,
+      "meanHour": "20:10",
+      "resultantLength": 0.593,
+      "circularVariance": 0.407,
+      "circularStdDev": 1.02,
+      "rayleighTestStatistic": 26.05,
+      "rayleighPValue": 0.0000022,
+      "isNonUniform": true,
+      "confidenceInterval": "18:30 - 21:50",
+      "topPeaks": [
+        {"time": "23:00", "relativeStrength": 0.401},
+        {"time": "10:00", "relativeStrength": 0.077}
+      ]
+    }
+  },
+  "statisticalTests": {
+    "transferTime": {
+      "testType": "Kruskal-Wallis",
+      "H": 3.64,
+      "df": 3,
+      "pValue": 0.303,
+      "significant": false
+    },
+    "etdTime": {
+      "testType": "Kruskal-Wallis",
+      "H": 1.24,
+      "df": 3,
+      "pValue": 0.743,
+      "significant": false
+    },
+    "bookToAllocTime": {
+      "testType": "Kruskal-Wallis",
+      "H": 1.25,
+      "df": 3,
+      "pValue": 0.741,
+      "significant": false
+    },
+    "allocToArrTime": {
+      "testType": "Kruskal-Wallis",
+      "H": 3.62,
+      "df": 3,
+      "pValue": 0.306,
+      "significant": false
+    }
+  },
+  "keyFindings": {
+    "transferTime": {
+      "shortestWard": "W6D",
+      "shortestValue": 152.37,
+      "highestVariabilityWard": "W6B",
+      "highestVariabilityIQR": [163.13, 237.72]
+    },
+    "etdTime": {
+      "shortestWard": "W6B",
+      "shortestValue": 443.74,
+      "longestWard": "W6D",
+      "longestValue": 1664.38
+    },
+    "timePatterns": {
+      "bookingHasPattern": false,
+      "allocationPeakHour": "20:00",
+      "registrationPeakHour": "20:00",
+      "arrivalPeakHour": "23:00"
+    }
+  },
+  "metadata": {
+    "analysisDate": "2025-03-15",
+    "dataSource": "Hospital Ampang ETD and Wards Data",
+    "sampleSize": 37,
+    "timeperiod": "February-March 2025"
+  }
+}
