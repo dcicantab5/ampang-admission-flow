@@ -1,4 +1,4 @@
-// Extract React and Recharts components
+// Extract React and Recharts components 
 const { useState, useEffect } = React;
 const { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
