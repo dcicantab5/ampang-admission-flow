@@ -4,24 +4,522 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hospital Ampang Patient Flow Analysis</title>
-  <!-- Make sure all dependencies are properly loaded -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Load React and ReactDOM first -->
   <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Then load Babel for JSX transformation -->
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-  <!-- Then load other dependencies -->
   <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
 </head>
 <body>
   <div id="root" class="p-4 max-w-7xl mx-auto"></div>
   
-  <!-- Load your data first -->
-  <script src="data.json"></script>
+  <script>
+    // Inline your data directly to avoid AJAX issues
+    {
+  "W6A": {
+    "bookToAlloc": {
+      "median": 7.11,
+      "q1": 3.36,
+      "q3": 13.72,
+      "iqr": 10.36,
+      "min": 0.02,
+      "max": 53.94,
+      "mean": 10.04,
+      "ciLower": 8.32,
+      "ciUpper": 11.76
+    },
+    "allocToArr": {
+      "median": 0.87,
+      "q1": 0.51,
+      "q3": 1.54,
+      "iqr": 1.03,
+      "min": 0.11,
+      "max": 9.79,
+      "mean": 1.18,
+      "ciLower": 0.95,
+      "ciUpper": 1.42
+    },
+    "bookToArr": {
+      "median": 7.98,
+      "q1": 3.98,
+      "q3": 14.58, 
+      "iqr": 10.60,
+      "min": 0.35,
+      "max": 54.90,
+      "mean": 10.81,
+      "ciLower": 9.02,
+      "ciUpper": 12.61
+    },
+    "totalTime": {
+      "median": 8.16,
+      "q1": 4.01,
+      "q3": 16.26,
+      "iqr": 12.25,
+      "min": 0.35,
+      "max": 54.90,
+      "mean": 11.17,
+      "ciLower": 9.31,
+      "ciUpper": 13.03
+    }
+  },
+  "W6B": {
+    "bookToAlloc": {
+      "median": 10.39,
+      "q1": 3.93,
+      "q3": 27.64,
+      "iqr": 23.71,
+      "min": 0.05,
+      "max": 56.07,
+      "mean": 16.33,
+      "ciLower": 13.51,
+      "ciUpper": 19.15
+    },
+    "allocToArr": {
+      "median": 0.94,
+      "q1": 0.71,
+      "q3": 1.49,
+      "iqr": 0.79,
+      "min": 0.34,
+      "max": 11.17,
+      "mean": 1.34,
+      "ciLower": 1.09,
+      "ciUpper": 1.59
+    },
+    "bookToArr": {
+      "median": 11.25,
+      "q1": 5.33,
+      "q3": 29.50,
+      "iqr": 24.17,
+      "min": 0.62,
+      "max": 57.26,
+      "mean": 17.73,
+      "ciLower": 14.74,
+      "ciUpper": 20.73
+    },
+    "totalTime": {
+      "median": 11.65,
+      "q1": 5.33,
+      "q3": 29.11,
+      "iqr": 23.78,
+      "min": 0.62,
+      "max": 57.26,
+      "mean": 17.60,
+      "ciLower": 14.48,
+      "ciUpper": 20.71
+    }
+  },
+  "W6C": {
+    "bookToAlloc": {
+      "median": 8.15,
+      "q1": 2.28,
+      "q3": 19.65,
+      "iqr": 17.37,
+      "min": 0.13,
+      "max": 49.67,
+      "mean": 13.16,
+      "ciLower": 10.57,
+      "ciUpper": 15.75
+    },
+    "allocToArr": {
+      "median": 0.95,
+      "q1": 0.60,
+      "q3": 1.52,
+      "iqr": 0.92,
+      "min": 0.23,
+      "max": 3.60,
+      "mean": 1.13,
+      "ciLower": 0.99,
+      "ciUpper": 1.28
+    },
+    "bookToArr": {
+      "median": 8.38,
+      "q1": 3.18,
+      "q3": 20.63,
+      "iqr": 17.45,
+      "min": 0.53,
+      "max": 52.45,
+      "mean": 14.07,
+      "ciLower": 11.35,
+      "ciUpper": 16.80
+    },
+    "totalTime": {
+      "median": 8.92,
+      "q1": 3.18,
+      "q3": 20.63,
+      "iqr": 17.45,
+      "min": 0.53,
+      "max": 52.45,
+      "mean": 14.27,
+      "ciLower": 11.55,
+      "ciUpper": 16.99
+    }
+  },
+  "W6D": {
+    "bookToAlloc": {
+      "median": 11.43,
+      "q1": 3.71,
+      "q3": 25.90,
+      "iqr": 22.19,
+      "min": 0.01,
+      "max": 50.66,
+      "mean": 14.53,
+      "ciLower": 11.93,
+      "ciUpper": 17.13
+    },
+    "allocToArr": {
+      "median": 0.66,
+      "q1": 0.48,
+      "q3": 0.87,
+      "iqr": 0.39,
+      "min": 0.14,
+      "max": 3.57,
+      "mean": 0.80,
+      "ciLower": 0.69,
+      "ciUpper": 0.90
+    },
+    "bookToArr": {
+      "median": 12.06,
+      "q1": 4.19,
+      "q3": 26.31,
+      "iqr": 22.12,
+      "min": 0.30,
+      "max": 51.17,
+      "mean": 15.33,
+      "ciLower": 12.66,
+      "ciUpper": 17.99
+    },
+    "totalTime": {
+      "median": 12.06,
+      "q1": 4.19,
+      "q3": 26.31,
+      "iqr": 22.12,
+      "min": 0.30,
+      "max": 51.17,
+      "mean": 15.33,
+      "ciLower": 12.66,
+      "ciUpper": 18.00
+    }
+  }
+}
+  </script>
   
-  <!-- Load your app.js with type="text/babel" for JSX transformation -->
-  <script type="text/babel" src="app.js"></script>
+  <script type="text/babel">
+    // Your PatientFlowAnalysis component goes here, using the global wardData
+    // ...
+    // Main constants from React and Recharts libraries
+const { useState, useEffect } = React;
+const { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+  Tooltip, Legend, ResponsiveContainer, ErrorBar 
+} = Recharts;
+
+// The main component
+function PatientFlowAnalysis() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [wardStats, setWardStats] = useState({});
+  const [selectedMetric, setSelectedMetric] = useState("totalTime");
+  const [showMeanStats, setShowMeanStats] = useState(false);
+  const wardOrder = ["W6A", "W6B", "W6C", "W6D"];
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load pre-processed data for GitHub Pages deployment
+        // This replaces the dynamic data loading from Excel
+        fetch('data.json')
+          .then(response => response.json())
+          .then(data => {
+            setWardStats(data);
+            setLoading(false);
+          });
+      } catch (error) {
+        console.error("Error loading data:", error);
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
+  
+  // Prepare data for chart
+  const prepareChartData = () => {
+    if (!wardStats || Object.keys(wardStats).length === 0) return [];
+    
+    return wardOrder.map(ward => {
+      if (!wardStats[ward] || !wardStats[ward][selectedMetric]) {
+        return { ward };
+      }
+      
+      const stat = wardStats[ward][selectedMetric];
+      
+      return {
+        ward,
+        median: stat.median,
+        q1: stat.q1,
+        q3: stat.q3,
+        iqr: stat.q3 - stat.q1,
+        min: stat.min,
+        max: stat.max,
+        mean: stat.mean,
+        lowerCI: stat.ciLower,
+        upperCI: stat.ciUpper
+      };
+    });
+  };
+  
+  // Get current metric label
+  const getCurrentMetricLabel = () => {
+    const metric = metricOptions.find(m => m.value === selectedMetric);
+    return metric ? `Median ${metric.label}` : '';
+  };
+  
+  // Create summary table data
+  const createSummaryTableData = () => {
+    if (!wardStats || Object.keys(wardStats).length === 0) return [];
+    
+    const metrics = [
+      'bookToAlloc',
+      'allocToArr',
+      'bookToArr',
+      'totalTime'
+    ];
+    
+    return metrics.map(metric => {
+      const row = {
+        metric: metricOptions.find(m => m.value === metric)?.label || metric,
+      };
+      
+      wardOrder.forEach(ward => {
+        if (wardStats[ward] && wardStats[ward][metric]) {
+          const stat = wardStats[ward][metric];
+          row[`${ward}_mean`] = stat.mean.toFixed(2);
+          row[`${ward}_ci`] = `(${stat.ciLower.toFixed(2)}-${stat.ciUpper.toFixed(2)})`;
+          row[`${ward}_median`] = stat.median.toFixed(2);
+          row[`${ward}_iqr`] = `(${stat.q1.toFixed(2)}-${stat.q3.toFixed(2)})`;
+        }
+      });
+      
+      return row;
+    });
+  };
+  
+  // Metrics for selection
+  const metricOptions = [
+    { value: 'bookToAlloc', label: 'Time from Booking to Allocation (hours)' },
+    { value: 'allocToArr', label: 'Time from Allocation to Arrival (hours)' },
+    { value: 'bookToArr', label: 'Time from Booking to Arrival (hours)' },
+    { value: 'totalTime', label: 'Total Time (hours)' }
+  ];
+  
+  const chartData = prepareChartData();
+  const summaryData = createSummaryTableData();
+  
+  if (loading) {
+    return <div className="p-4">Loading patient flow data...</div>;
+  }
+  
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Hospital Ampang Patient Flow Analysis</h1>
+      
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">Comparative Analysis by Ward</h2>
+        <p className="mb-4">Select a metric to visualize ward differences:</p>
+        
+        <div className="flex flex-wrap gap-4 mb-4">
+          <select 
+            value={selectedMetric}
+            onChange={(e) => setSelectedMetric(e.target.value)}
+            className="p-2 border rounded"
+          >
+            {metricOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ward" />
+              <YAxis label={{ value: 'Hours', angle: -90, position: 'insideLeft' }} />
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  return [
+                    `Median: ${value.toFixed(2)} hours
+IQR: ${props.payload.q1.toFixed(2)}-${props.payload.q3.toFixed(2)} hours
+Range: ${props.payload.min.toFixed(2)}-${props.payload.max.toFixed(2)} hours
+Mean: ${props.payload.mean.toFixed(2)} hrs (95% CI: ${props.payload.lowerCI.toFixed(2)}-${props.payload.upperCI.toFixed(2)})`,
+                    name
+                  ];
+                }} 
+              />
+              <Legend />
+              <Bar 
+                dataKey="median" 
+                fill="#8884d8" 
+                name={getCurrentMetricLabel()} 
+                isAnimationActive={false}
+              >
+                {chartData.map((entry, index) => (
+                  <ErrorBar 
+                    key={`error-bar-${index}`} 
+                    dataKey={["q1", "q3"]} 
+                    width={8} 
+                    strokeWidth={2}
+                    stroke="#464646" 
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">Summary Statistics (Hours)</h2>
+        
+        <div className="flex border-b mb-4">
+          <button 
+            className={`py-2 px-4 ${showMeanStats ? 'border-b-2 border-blue-500 font-medium' : ''}`}
+            onClick={() => setShowMeanStats(true)}
+          >
+            Mean Statistics
+          </button>
+          <button 
+            className={`py-2 px-4 ${!showMeanStats ? 'border-b-2 border-blue-500 font-medium' : ''}`}
+            onClick={() => setShowMeanStats(false)}
+          >
+            Median Statistics
+          </button>
+        </div>
+        
+        <div className="overflow-x-auto">
+          {showMeanStats ? (
+            <table className="min-w-full bg-white border">
+              <thead>
+                <tr>
+                  <th className="border p-2">Metric</th>
+                  {wardOrder.map(ward => (
+                    <th key={ward} className="border p-2">{ward} Mean (95% CI)</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {summaryData.map((row, i) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                    <td className="border p-2 font-semibold">{row.metric}</td>
+                    {wardOrder.map(ward => (
+                      <td key={`${ward}-${i}`} className="border p-2">
+                        {row[`${ward}_mean`]} {row[`${ward}_ci`]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <table className="min-w-full bg-white border">
+              <thead>
+                <tr>
+                  <th className="border p-2">Metric</th>
+                  {wardOrder.map(ward => (
+                    <th key={ward} className="border p-2">{ward} Median (IQR)</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {summaryData.map((row, i) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                    <td className="border p-2 font-semibold">{row.metric}</td>
+                    {wardOrder.map(ward => (
+                      <td key={`${ward}-${i}`} className="border p-2">
+                        {row[`${ward}_median`]} {row[`${ward}_iqr`]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold">Key Findings with Statistical Significance (with Bonferroni Correction):</h3>
+          <ul className="list-disc pl-6 mt-2">
+            <li><strong>Total Processing Time:</strong>
+              <ul>
+                <li>W6A has significantly faster total processing time than W6B (mean diff: -6.43 hrs, 95% CI: -9.74 to -3.12, p&lt;0.001, adjusted p=0.003)</li>
+                <li>W6A has faster total processing time than W6D (mean diff: -4.16 hrs, 95% CI: -7.19 to -1.13, p=0.007, adjusted p=0.17) (NS after correction)</li>
+              </ul>
+            </li>
+            <li><strong>Booking to Allocation Time:</strong>
+              <ul>
+                <li>W6A has significantly shorter booking-to-allocation time than W6B (mean diff: -6.28 hrs, 95% CI: -9.58 to -2.99, p&lt;0.001, adjusted p=0.005)</li>
+                <li>W6A has shorter booking-to-allocation time than W6C (mean diff: -3.11 hrs, 95% CI: -6.22 to -0.01, p=0.049, adjusted p=1.0) (NS after correction)</li>
+                <li>W6A has shorter booking-to-allocation time than W6D (mean diff: -4.48 hrs, 95% CI: -7.48 to -1.49, p=0.003, adjusted p=0.08) (NS after correction)</li>
+              </ul>
+            </li>
+            <li><strong>Allocation to Arrival Time:</strong>
+              <ul>
+                <li>W6D has significantly shorter allocation-to-arrival time than W6B (mean diff: 0.54 hrs, 95% CI: 0.27 to 0.82, p&lt;0.001, adjusted p=0.003)</li>
+                <li>W6D has significantly shorter allocation-to-arrival time than W6C (mean diff: 0.34 hrs, 95% CI: 0.16 to 0.51, p&lt;0.001, adjusted p=0.005)</li>
+                <li>W6D has shorter allocation-to-arrival time than W6A (mean diff: 0.39 hrs, 95% CI: 0.12 to 0.65, p=0.005, adjusted p=0.11) (NS after correction)</li>
+              </ul>
+            </li>
+            <li><strong>Booking to Arrival Time:</strong>
+              <ul>
+                <li>W6A has significantly shorter booking-to-arrival time than W6B (mean diff: -6.92 hrs, 95% CI: -10.35 to -3.49, p&lt;0.001, adjusted p=0.002)</li>
+                <li>W6A has shorter booking-to-arrival time than W6C (mean diff: -3.26 hrs, 95% CI: -6.44 to -0.08, p=0.044, adjusted p=1.0) (NS after correction)</li>
+                <li>W6A has shorter booking-to-arrival time than W6D (mean diff: -4.51 hrs, 95% CI: -7.59 to -1.44, p=0.004, adjusted p=0.10) (NS after correction)</li>
+              </ul>
+            </li>
+            <li>Note: NS = Not Significant after Bonferroni correction for multiple comparisons (24 tests)</li>
+            <li>All wards show high variability (wide IQRs) indicating inconsistent processes.</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Quality Improvement Recommendations</h2>
+        <ul className="list-disc pl-6">
+          <li><strong>Process Improvement Opportunity:</strong> Adopt W6A's bed allocation processes across all wards, particularly in W6B. This could potentially reduce total processing time by up to 6.43 hours in W6B (95% CI: 3.12-9.74 hours, p&lt;0.001, adjusted p=0.003).</li>
+          
+          <li><strong>Booking-to-Allocation Standardization:</strong> Study and standardize W6A's booking-to-allocation workflow, which is significantly faster than W6B (mean diff: -6.28 hrs, p&lt;0.001, adjusted p=0.005). While W6A also performs better than W6C and W6D, these differences did not remain significant after Bonferroni correction.</li>
+          
+          <li><strong>Transfer Process Enhancement:</strong> Implement W6D's allocation-to-arrival practices across all wards. W6D is significantly more efficient than both W6B (mean diff: 0.54 hrs, p&lt;0.001, adjusted p=0.003) and W6C (mean diff: 0.34 hrs, p&lt;0.001, adjusted p=0.005), even after Bonferroni correction.</li>
+          
+          <li><strong>Real-time Monitoring System:</strong> Develop a dashboard to track these key metrics with statistical process control methods to identify when processes drift outside expected performance levels.</li>
+          
+          <li><strong>Targeted Wait Time Reduction:</strong> Set specific targets based on statistically significant findings:
+            <ul>
+              <li>Booking-to-allocation target: 7.11 hours (W6A's current median)</li>
+              <li>Allocation-to-arrival target: 0.66 hours (W6D's current median)</li>
+              <li>Total process time target: 8.16 hours (W6A's current median)</li>
+            </ul>
+          </li>
+          
+          <li><strong>Process Variability Reduction:</strong> Address the wide interquartile ranges to deliver more consistent patient care experiences. Focus particularly on W6B, which shows the highest variability.</li>
+          
+          <li><strong>Cross-Functional Process Improvement Team:</strong> Form a team with staff from W6A (for booking-to-allocation expertise) and W6D (for allocation-to-arrival expertise) to develop standardized workflows for all wards based on the statistically significant differences found.</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// Render the application
+
+    
+    ReactDOM.render(
+      <PatientFlowAnalysis />,
+      document.getElementById('root')
+    );
+  </script>
 </body>
 </html>
