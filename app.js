@@ -1,209 +1,425 @@
-const { useState } = React;
-const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ErrorBar, LineChart, Line } = Recharts;
+// Hospital Ward Data Visualization Dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Load the JSON data
+    fetch('data.json')
+        .then(response => response.json())
+        .then(data => {
+            // Display metadata
+            document.getElementById('analysisDate').textContent = data.metadata.analysisDate;
+            document.getElementById('dataSource').textContent = data.metadata.dataSource;
+            document.getElementById('sampleSize').textContent = data.metadata.sampleSize;
+            document.getElementById('timeperiod').textContent = data.metadata.timeperiod;
 
-// Add error bar data for visualization
-const addErrorBars = (data) => {
-  return data.map(item => ({
-    ...item,
-    errorBar: [item.ciLower, item.ciUpper]
-  }));
-};
+            // Create charts
+            createWardCountChart(data);
+            createTransferTimeChart(data);
+            createETDTimeChart(data);
+            createTimePatternChart(data);
+            createCircularChart(data);
+            displayKeyFindings(data);
+            displayStatisticalTests(data);
+        })
+        .catch(error => {
+            console.error('Error loading data:', error);
+            document.getElementById('error-message').textContent = 'Error loading data. Please check console for details.';
+            document.getElementById('error-message').style.display = 'block';
+        });
+});
 
-const HospitalFlowDashboard = () => {
-  const [showMean, setShowMean] = useState(false);
+// Ward Count Chart
+function createWardCountChart(data) {
+    const ctx = document.getElementById('wardCountChart').getContext('2d');
+    
+    const wardLabels = data.wards;
+    const countValues = wardLabels.map(ward => data.wardCounts[ward]);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: wardLabels,
+            datasets: [{
+                label: 'Patient Count',
+                data: countValues,
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)'
+                ],
+                borderColor: [
+                    'rgb(75, 192, 192)',
+                    'rgb(54, 162, 235)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 159, 64)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Patient Count by Ward',
+                    font: { size: 16 }
+                },
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Patients'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Ward'
+                    }
+                }
+            }
+        }
+    });
+}
 
-  // Data based on analysis
-  // Prepare data with error bars - arranged in ward order: W6A, W6B, W6C, W6D
-  const sortedTransferTimeByWard = addErrorBars([
-    { ward: 'W6A', median: 181.27, q1: 157.40, q3: 214.97, mean: 239.88, ciLower: 148.35, ciUpper: 331.42 },
-    { ward: 'W6B', median: 196.08, q1: 163.13, q3: 237.72, mean: 221.35, ciLower: 159.90, ciUpper: 282.81 },
-    { ward: 'W6C', median: 159.50, q1: 146.00, q3: 183.00, mean: 164.50, ciLower: 146.34, ciUpper: 182.66 },
-    { ward: 'W6D', median: 152.37, q1: 149.70, q3: 214.07, mean: 172.05, ciLower: 130.84, ciUpper: 213.26 }
-  ]);
-  
-  // Make sure we're working with the correctly ordered array
-  const transferTimeByWard = sortedTransferTimeByWard;
+// Transfer Time Chart - Box Plot
+function createTransferTimeChart(data) {
+    const ctx = document.getElementById('transferTimeChart').getContext('2d');
+    
+    const wardLabels = data.wards;
+    const boxplotData = wardLabels.map(ward => {
+        const wardData = data.transferTime[ward];
+        return {
+            min: wardData.ciLower,
+            q1: wardData.q1,
+            median: wardData.median,
+            q3: wardData.q3,
+            max: wardData.ciUpper,
+            mean: wardData.mean
+        };
+    });
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: wardLabels,
+            datasets: [{
+                label: 'Median Transfer Time',
+                data: wardLabels.map(ward => data.transferTime[ward].median),
+                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Transfer Time by Ward (Minutes)',
+                    font: { size: 16 }
+                },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const ward = context.label;
+                            const wardData = data.transferTime[ward];
+                            return [
+                                `Mean: ${wardData.mean.toFixed(2)} min`,
+                                `Median: ${wardData.median.toFixed(2)} min`,
+                                `Q1-Q3: ${wardData.q1.toFixed(2)} - ${wardData.q3.toFixed(2)} min`,
+                                `95% CI: ${wardData.ciLower.toFixed(2)} - ${wardData.ciUpper.toFixed(2)} min`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Minutes'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Ward'
+                    }
+                }
+            }
+        }
+    });
+}
 
-  const sortedEtdTimeByWard = addErrorBars([
-    { ward: 'W6A', median: 519.81, q1: 327.50, q3: 984.87, mean: 662.32, ciLower: 332.85, ciUpper: 991.79 },
-    { ward: 'W6B', median: 443.74, q1: 151.30, q3: 2189.28, mean: 1013.31, ciLower: 486.35, ciUpper: 1540.28 },
-    { ward: 'W6C', median: 1122.50, q1: 814.00, q3: 2282.00, mean: 1302.38, ciLower: 576.53, ciUpper: 2028.22 },
-    { ward: 'W6D', median: 1664.38, q1: 131.65, q3: 1921.37, mean: 1239.13, ciLower: 144.10, ciUpper: 2334.16 }
-  ]);
-  
-  // Make sure we're working with the correctly ordered array
-  const etdTimeByWard = sortedEtdTimeByWard;
+// ETD Time Chart
+function createETDTimeChart(data) {
+    const ctx = document.getElementById('etdTimeChart').getContext('2d');
+    
+    const wardLabels = data.wards;
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: wardLabels,
+            datasets: [{
+                label: 'Median ETD Time',
+                data: wardLabels.map(ward => data.etdTime[ward].median),
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'ETD Time by Ward (Minutes)',
+                    font: { size: 16 }
+                },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const ward = context.label;
+                            const wardData = data.etdTime[ward];
+                            return [
+                                `Mean: ${wardData.mean.toFixed(2)} min`,
+                                `Median: ${wardData.median.toFixed(2)} min`,
+                                `Q1-Q3: ${wardData.q1.toFixed(2)} - ${wardData.q3.toFixed(2)} min`,
+                                `95% CI: ${wardData.ciLower.toFixed(2)} - ${wardData.ciUpper.toFixed(2)} min`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Minutes'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Ward'
+                    }
+                }
+            }
+        }
+    });
+}
 
-  const timePatterns = {
-    booktime: [0, 1, 2, 1, 2, 1, 4, 2, 3, 0, 0, 1, 3, 2, 3, 1, 0, 2, 0, 3, 2, 2, 1, 1],
-    alloctime: [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 6, 1, 4, 2, 4, 2, 1, 9, 3, 0, 0],
-    regtime: [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 2, 4, 2, 1, 2, 4, 2, 1, 8, 6, 1, 1],
-    arrtime: [3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 1, 1, 3, 4, 1, 2, 7, 1, 0, 11]
-  };
+// Time Pattern Chart - 24-hour distribution
+function createTimePatternChart(data) {
+    const ctx = document.getElementById('timePatternChart').getContext('2d');
+    
+    const hourLabels = Array.from({length: 24}, (_, i) => i);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: hourLabels.map(hour => `${hour}:00`),
+            datasets: [
+                {
+                    label: 'Booking Time',
+                    data: data.timePatterns.booktime,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    fill: false,
+                    tension: 0.3
+                },
+                {
+                    label: 'Allocation Time',
+                    data: data.timePatterns.alloctime,
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    fill: false,
+                    tension: 0.3
+                },
+                {
+                    label: 'Registration Time',
+                    data: data.timePatterns.regtime,
+                    borderColor: 'rgb(153, 102, 255)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                    fill: false,
+                    tension: 0.3
+                },
+                {
+                    label: 'Arrival Time',
+                    data: data.timePatterns.arrtime,
+                    borderColor: 'rgb(255, 159, 64)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                    fill: false,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Time Patterns (24-hour Distribution)',
+                    font: { size: 16 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Frequency'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Hour of Day'
+                    }
+                }
+            }
+        }
+    });
+}
 
-  const hourlyPatternData = Array.from({ length: 24 }, (_, i) => ({
-    hour: i,
-    booktime: timePatterns.booktime[i],
-    alloctime: timePatterns.alloctime[i],
-    regtime: timePatterns.regtime[i],
-    arrtime: timePatterns.arrtime[i]
-  }));
+// Circular Statistics Visualization
+function createCircularChart(data) {
+    const ctx = document.getElementById('circularChart').getContext('2d');
+    
+    // Extract peak times and their relative strengths
+    const timeTypes = ['booktime', 'alloctime', 'regtime', 'arrtime'];
+    const labels = ['Booking', 'Allocation', 'Registration', 'Arrival'];
+    
+    const datasets = timeTypes.map((type, index) => {
+        const peaks = data.circularStats[type].topPeaks;
+        return {
+            label: `${labels[index]} Peak: ${peaks[0].time} (${(peaks[0].relativeStrength * 100).toFixed(1)}%)`,
+            data: [peaks[0].relativeStrength],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 159, 64, 0.7)'
+            ][index]
+        };
+    });
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Peak Time Strength'],
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Peak Times Analysis',
+                    font: { size: 16 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1,
+                    title: {
+                        display: true,
+                        text: 'Relative Strength'
+                    }
+                }
+            }
+        }
+    });
+}
 
-  const comparisons = {
-    transferTime: { H: 3.64, df: 3, pValue: 0.303, significant: false },
-    etdTime: { H: 1.24, df: 3, pValue: 0.743, significant: false },
-    bookToAllocTime: { H: 1.25, df: 3, pValue: 0.741, significant: false },
-    allocToArrTime: { H: 3.62, df: 3, pValue: 0.306, significant: false }
-  };
+// Display Key Findings
+function displayKeyFindings(data) {
+    const findingsElement = document.getElementById('keyFindings');
+    
+    // Transfer Time Findings
+    const transferFindings = data.keyFindings.transferTime;
+    const transferHtml = `
+        <h4>Transfer Time</h4>
+        <ul>
+            <li>Shortest median transfer time: <strong>Ward ${transferFindings.shortestWard}</strong> (${transferFindings.shortestValue.toFixed(2)} minutes)</li>
+            <li>Highest variability: <strong>Ward ${transferFindings.highestVariabilityWard}</strong> (IQR: ${transferFindings.highestVariabilityIQR[0].toFixed(2)} - ${transferFindings.highestVariabilityIQR[1].toFixed(2)} minutes)</li>
+        </ul>
+    `;
+    
+    // ETD Time Findings
+    const etdFindings = data.keyFindings.etdTime;
+    const etdHtml = `
+        <h4>ETD Time</h4>
+        <ul>
+            <li>Shortest median ETD time: <strong>Ward ${etdFindings.shortestWard}</strong> (${etdFindings.shortestValue.toFixed(2)} minutes)</li>
+            <li>Longest median ETD time: <strong>Ward ${etdFindings.longestWard}</strong> (${etdFindings.longestValue.toFixed(2)} minutes)</li>
+        </ul>
+    `;
+    
+    // Time Pattern Findings
+    const timeFindings = data.keyFindings.timePatterns;
+    const timeHtml = `
+        <h4>Time Patterns</h4>
+        <ul>
+            <li>Booking time pattern: <strong>${timeFindings.bookingHasPattern ? 'Yes' : 'No'}</strong></li>
+            <li>Allocation peak hour: <strong>${timeFindings.allocationPeakHour}</strong></li>
+            <li>Registration peak hour: <strong>${timeFindings.registrationPeakHour}</strong></li>
+            <li>Arrival peak hour: <strong>${timeFindings.arrivalPeakHour}</strong></li>
+        </ul>
+    `;
+    
+    findingsElement.innerHTML = transferHtml + etdHtml + timeHtml;
+}
 
-  // Custom tooltip for the charts
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      // Add the rendering of the React component to the DOM at the end of the file
-  const renderComponent = () => {
-    return (
-        <div className="bg-white p-4 border rounded shadow-lg">
-          <p className="font-bold">{`Ward: ${data.ward}`}</p>
-          <p>{`Median: ${data.median.toFixed(1)} minutes`}</p>
-          <p>{`IQR: ${data.q1.toFixed(1)} - ${data.q3.toFixed(1)} minutes`}</p>
-          {showMean && (
-            <>
-              <p>{`Mean: ${data.mean.toFixed(1)} minutes`}</p>
-              <p>{`95% CI: ${data.ciLower.toFixed(1)} - ${data.ciUpper.toFixed(1)}`}</p>
-            </>
-          )}
-        </div>
-      );
+// Display Statistical Tests
+function displayStatisticalTests(data) {
+    const testsElement = document.getElementById('statisticalTests');
+    const tests = data.statisticalTests;
+    
+    let testsHtml = '<table class="table table-striped">';
+    testsHtml += `
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Test</th>
+                <th>H Value</th>
+                <th>df</th>
+                <th>p-value</th>
+                <th>Significant</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    const testNames = {
+        'transferTime': 'Transfer Time',
+        'etdTime': 'ETD Time',
+        'bookToAllocTime': 'Booking to Allocation',
+        'allocToArrTime': 'Allocation to Arrival'
+    };
+    
+    for (const [key, test] of Object.entries(tests)) {
+        testsHtml += `
+            <tr>
+                <td>${testNames[key]}</td>
+                <td>${test.testType}</td>
+                <td>${test.H.toFixed(2)}</td>
+                <td>${test.df}</td>
+                <td>${test.pValue.toFixed(3)}</td>
+                <td>${test.significant ? 'Yes' : 'No'}</td>
+            </tr>
+        `;
     }
-    return null;
-  };
-
-  // Custom tooltip for hourly patterns
-  const HourlyTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-4 border rounded shadow-lg">
-          <p className="font-bold">{`Hour: ${label}:00`}</p>
-          {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value} patients`}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Hospital Ampang Patient Flow Analysis</h1>
-        <p className="text-gray-600">
-          Analysis of patient flow from ETD to wards W6A, W6B, W6C, and W6D. Time measurements in minutes.
-        </p>
-        <div className="mt-4">
-          <label className="inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={showMean} 
-              onChange={() => setShowMean(!showMean)}
-              className="mr-2"
-            />
-            <span>Show Mean & 95% CI</span>
-          </label>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">Transfer Time by Ward</h2>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={transferTimeByWard}
-                margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="ward" />
-                <YAxis label={{ value: 'Minutes', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Bar 
-                  dataKey={showMean ? "mean" : "median"} 
-                  fill="#8884d8" 
-                  name={showMean ? "Mean Transfer Time" : "Median Transfer Time"} 
-                >
-                  {showMean && (
-                    <ErrorBar dataKey="errorBar" width={4} strokeWidth={2} stroke="#8884d8" />
-                  )}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-2 text-sm text-center text-gray-500">
-            {comparisons.transferTime.significant ? (
-              <p>Significant difference between wards (p = {comparisons.transferTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
-            ) : (
-              <p>No significant difference between wards (p = {comparisons.transferTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">ETD Time by Ward</h2>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={etdTimeByWard}
-                margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="ward" />
-                <YAxis label={{ value: 'Minutes', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Bar 
-                  dataKey={showMean ? "mean" : "median"} 
-                  fill="#82ca9d" 
-                  name={showMean ? "Mean ETD Time" : "Median ETD Time"} 
-                >
-                  {showMean && (
-                    <ErrorBar dataKey="errorBar" width={4} strokeWidth={2} stroke="#82ca9d" />
-                  )}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-2 text-sm text-center text-gray-500">
-            {comparisons.etdTime.significant ? (
-              <p>Significant difference between wards (p = {comparisons.etdTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
-            ) : (
-              <p>No significant difference between wards (p = {comparisons.etdTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white p-4 rounded shadow mb-8">
-        <h2 className="text-xl font-semibold mb-4">Hourly Pattern Analysis</h2>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={hourlyPatternData}
-              margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="hour" 
-                label={{ value: 'Hour of Day', position: 'insideBottom', offset: -10 }}
-                tickFormatter={(hour) => `${hour}:00`}
-              />
-              <YAxis label={{ value: 'Number of Patients', angle: -90, position: 'insideLeft' }} />
-              <Tooltip content={<HourlyTooltip />} />
-              <Legend />
-              <Line type="monotone" dataKey="booktime" stroke="#8884d8" name="Booking Time" />
-              <Line type="monotone" dataKey="alloctime" stroke="#82ca9d" name="Allocation Time" />
-              <Line type="monotone" dataKey="regtime" stroke="#ffc658" name="Registration Time" />
-              <Line type="monotone" dataKey="arrtime" stroke="#ff7300" name="Arrival Time" />
+    
+    testsHtml += '</tbody></table>';
+    testsElement.innerHTML = testsHtml;
+}
