@@ -1,220 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ampang Admission Flow Analysis</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Custom styles -->
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-            padding-top: 20px;
-        }
-        .dashboard-header {
-            padding: 20px 0;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .dashboard-title {
-            color: #0d6efd;
-            margin-bottom: 0;
-        }
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            transition: transform 0.3s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .card-header {
-            font-weight: 600;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-        }
-        .metadata-item {
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #e9ecef;
-            margin-bottom: 10px;
-        }
-        .metadata-label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #495057;
-        }
-        .metadata-value {
-            color: #0d6efd;
-            font-weight: 500;
-        }
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-        #error-message {
-            display: none;
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-        footer {
-            margin-top: 20px;
-            padding: 15px 0;
-            background-color: #343a40;
-            color: #fff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ampang Admission Flow Analysis</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React and ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Recharts -->
+  <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.min.js"></script>
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 1.5rem;
+      color: #4a5568;
+    }
+    
+    /* Additional custom styles */
+    .tooltip {
+      background-color: white;
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Dashboard Header -->
-        <div class="row dashboard-header">
-            <div class="col-md-8">
-                <h1 class="dashboard-title">Ampang Admission Flow Analysis</h1>
-                <p class="text-muted">Analysis of ETD and Ward Transfer Times</p>
-            </div>
-            <div class="col-md-4">
-                <div class="metadata-item">
-                    <div class="metadata-label">Analysis Date</div>
-                    <div class="metadata-value" id="analysisDate">Loading...</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">Time Period</div>
-                    <div class="metadata-value" id="timeperiod">Loading...</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Error Message -->
-        <div id="error-message" class="alert alert-danger"></div>
-        
-        <!-- Main Content -->
-        <div class="row">
-            <!-- Ward Count Chart -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Patient Distribution</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="wardCountChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-footer text-muted">
-                        Sample Size: <span id="sampleSize">Loading...</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Transfer Time Chart -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Transfer Time Analysis</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="transferTimeChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-footer text-muted">
-                        Time from transfer decision to actual transfer
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ETD Time Chart -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">ETD Time Analysis</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="etdTimeChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-footer text-muted">
-                        Emergency to Discharge/Transfer time
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Time Pattern Chart -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">24-hour Time Patterns</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="timePatternChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-footer text-muted">
-                        Patient flow patterns throughout the day
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Circular Stats Chart -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Peak Times Analysis</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="circularChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-footer text-muted">
-                        Circular statistics showing significant time patterns
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Key Findings -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Key Findings</div>
-                    <div class="card-body">
-                        <div id="keyFindings">Loading...</div>
-                    </div>
-                    <div class="card-footer text-muted">
-                        Source: <span id="dataSource">Loading...</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Statistical Tests -->
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">Statistical Tests Results</div>
-                    <div class="card-body">
-                        <div id="statisticalTests">Loading...</div>
-                    </div>
-                    <div class="card-footer text-muted">
-                        Kruskal-Wallis tests comparing differences between wards
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <footer class="text-center">
-        <div class="container">
-            <p>Ampang Admission Flow Analysis | Created with Chart.js</p>
-        </div>
-    </footer>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="app.js"></script>
+  <div id="root">
+    <div class="loading">Loading analysis data...</div>
+  </div>
+  
+  <!-- App Script -->
+  <script type="text/babel" src="./app.js"></script>
 </body>
 </html>
