@@ -271,3 +271,16 @@ Mean: ${props.payload.mean.toFixed(2)} hrs (95% CI: ${props.payload.lowerCI.toFi
       </div>
       
       <footer className="mt-8 pt-4
+          <footer className="mt-8 pt-4 border-t text-sm text-gray-600">
+        <p>© 2025 Hospital Ampang Patient Flow Analysis</p>
+        <p>This analysis is licensed under GNU Affero General Public License v3.0 (AGPL-3.0)</p>
+      </footer>
+    </div>
+  );
+}
+
+// Render the application to the DOM
+ReactDOM.render(
+  <PatientFlowAnalysis />,
+  document.getElementById('root')
+);
