@@ -9,19 +9,21 @@
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- React and ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   
   <!-- Babel for JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- Recharts -->
-  <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.min.js"></script>
+  <!-- Recharts (Complete package with all components) -->
+  <script src="https://unpkg.com/recharts@2.5.0/umd/Recharts.js"></script>
   
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
     }
     
     .loading {
@@ -33,7 +35,17 @@
       color: #4a5568;
     }
     
-    /* Additional custom styles */
+    .error-message {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #e53e3e;
+      text-align: center;
+      padding: 0 20px;
+    }
+    
     .tooltip {
       background-color: white;
       border: 1px solid #e2e8f0;
@@ -48,7 +60,38 @@
     <div class="loading">Loading analysis data...</div>
   </div>
   
-  <!-- App Script -->
-  <script type="text/babel" src="./app.js"></script>
+  <script>
+    // Error handling for script loading
+    window.addEventListener('error', function(e) {
+      if (e.filename && (e.filename.includes('react') || e.filename.includes('recharts'))) {
+        document.getElementById('root').innerHTML = 
+          '<div class="error-message">' +
+          '<h2>Error Loading Resources</h2>' +
+          '<p>There was a problem loading the required libraries. Please check your internet connection and try again.</p>' +
+          '<p>Technical details: ' + e.message + '</p>' +
+          '</div>';
+      }
+    }, true);
+    
+    // Make Recharts components globally available for app.js
+    window.Recharts = Recharts;
+  </script>
+  
+  <!-- Load and process app.js with Babel -->
+  <script type="text/babel" data-type="module" src="./app.js"></script>
+  
+  <script>
+    // Fallback if app.js fails to load
+    setTimeout(function() {
+      if (document.querySelector('.loading')) {
+        document.getElementById('root').innerHTML = 
+          '<div class="error-message">' +
+          '<h2>Loading Timeout</h2>' +
+          '<p>The application took too long to load. This could be due to network issues or problems with the data file.</p>' +
+          '<p>Please try refreshing the page. If the problem persists, check that data.json exists in the repository.</p>' +
+          '</div>';
+      }
+    }, 10000); // 10-second timeout
+  </script>
 </body>
 </html>
