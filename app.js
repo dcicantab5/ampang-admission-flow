@@ -1,286 +1,209 @@
-// Extract React and Recharts components 
-const { useState, useEffect } = React;
-const { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer, ErrorBar 
-} = Recharts;
+const { useState } = React;
+const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ErrorBar, LineChart, Line } = Recharts;
 
-// Main component
-function PatientFlowAnalysis() {
-  const [selectedMetric, setSelectedMetric] = useState("totalTime");
-  const [showMeanStats, setShowMeanStats] = useState(false);
-  const wardOrder = ["W6A", "W6B", "W6C", "W6D"];
+// Add error bar data for visualization
+const addErrorBars = (data) => {
+  return data.map(item => ({
+    ...item,
+    errorBar: [item.ciLower, item.ciUpper]
+  }));
+};
 
-  // Metrics for selection
-  const metricOptions = [
-    { value: 'bookToAlloc', label: 'Time from Booking to Allocation (hours)' },
-    { value: 'allocToArr', label: 'Time from Allocation to Arrival (hours)' },
-    { value: 'bookToArr', label: 'Time from Booking to Arrival (hours)' },
-    { value: 'totalTime', label: 'Total Time (hours)' }
-  ];
+const HospitalFlowDashboard = () => {
+  const [showMean, setShowMean] = useState(false);
+
+  // Data based on analysis
+  // Prepare data with error bars - arranged in ward order: W6A, W6B, W6C, W6D
+  const sortedTransferTimeByWard = addErrorBars([
+    { ward: 'W6A', median: 181.27, q1: 157.40, q3: 214.97, mean: 239.88, ciLower: 148.35, ciUpper: 331.42 },
+    { ward: 'W6B', median: 196.08, q1: 163.13, q3: 237.72, mean: 221.35, ciLower: 159.90, ciUpper: 282.81 },
+    { ward: 'W6C', median: 159.50, q1: 146.00, q3: 183.00, mean: 164.50, ciLower: 146.34, ciUpper: 182.66 },
+    { ward: 'W6D', median: 152.37, q1: 149.70, q3: 214.07, mean: 172.05, ciLower: 130.84, ciUpper: 213.26 }
+  ]);
   
-  // Prepare data for chart
-  const prepareChartData = () => {
-    return wardOrder.map(ward => {
-      if (!wardData[ward] || !wardData[ward][selectedMetric]) {
-        return { ward };
-      }
-      
-      const stat = wardData[ward][selectedMetric];
-      
-      return {
-        ward,
-        median: stat.median,
-        q1: stat.q1,
-        q3: stat.q3,
-        iqr: stat.iqr,
-        min: stat.min,
-        max: stat.max,
-        mean: stat.mean,
-        lowerCI: stat.ciLower,
-        upperCI: stat.ciUpper
-      };
-    });
+  // Make sure we're working with the correctly ordered array
+  const transferTimeByWard = sortedTransferTimeByWard;
+
+  const sortedEtdTimeByWard = addErrorBars([
+    { ward: 'W6A', median: 519.81, q1: 327.50, q3: 984.87, mean: 662.32, ciLower: 332.85, ciUpper: 991.79 },
+    { ward: 'W6B', median: 443.74, q1: 151.30, q3: 2189.28, mean: 1013.31, ciLower: 486.35, ciUpper: 1540.28 },
+    { ward: 'W6C', median: 1122.50, q1: 814.00, q3: 2282.00, mean: 1302.38, ciLower: 576.53, ciUpper: 2028.22 },
+    { ward: 'W6D', median: 1664.38, q1: 131.65, q3: 1921.37, mean: 1239.13, ciLower: 144.10, ciUpper: 2334.16 }
+  ]);
+  
+  // Make sure we're working with the correctly ordered array
+  const etdTimeByWard = sortedEtdTimeByWard;
+
+  const timePatterns = {
+    booktime: [0, 1, 2, 1, 2, 1, 4, 2, 3, 0, 0, 1, 3, 2, 3, 1, 0, 2, 0, 3, 2, 2, 1, 1],
+    alloctime: [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 6, 1, 4, 2, 4, 2, 1, 9, 3, 0, 0],
+    regtime: [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 2, 4, 2, 1, 2, 4, 2, 1, 8, 6, 1, 1],
+    arrtime: [3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 1, 1, 3, 4, 1, 2, 7, 1, 0, 11]
   };
-  
-  // Get current metric label
-  const getCurrentMetricLabel = () => {
-    const metric = metricOptions.find(m => m.value === selectedMetric);
-    return metric ? `Median ${metric.label}` : '';
+
+  const hourlyPatternData = Array.from({ length: 24 }, (_, i) => ({
+    hour: i,
+    booktime: timePatterns.booktime[i],
+    alloctime: timePatterns.alloctime[i],
+    regtime: timePatterns.regtime[i],
+    arrtime: timePatterns.arrtime[i]
+  }));
+
+  const comparisons = {
+    transferTime: { H: 3.64, df: 3, pValue: 0.303, significant: false },
+    etdTime: { H: 1.24, df: 3, pValue: 0.743, significant: false },
+    bookToAllocTime: { H: 1.25, df: 3, pValue: 0.741, significant: false },
+    allocToArrTime: { H: 3.62, df: 3, pValue: 0.306, significant: false }
   };
-  
-  // Create summary table data
-  const createSummaryTableData = () => {
-    const metrics = [
-      'bookToAlloc',
-      'allocToArr',
-      'bookToArr',
-      'totalTime'
-    ];
-    
-    return metrics.map(metric => {
-      const row = {
-        metric: metricOptions.find(m => m.value === metric)?.label || metric,
-      };
-      
-      wardOrder.forEach(ward => {
-        if (wardData[ward] && wardData[ward][metric]) {
-          const stat = wardData[ward][metric];
-          row[`${ward}_mean`] = stat.mean.toFixed(2);
-          row[`${ward}_ci`] = `(${stat.ciLower.toFixed(2)}-${stat.ciUpper.toFixed(2)})`;
-          row[`${ward}_median`] = stat.median.toFixed(2);
-          row[`${ward}_iqr`] = `(${stat.q1.toFixed(2)}-${stat.q3.toFixed(2)})`;
-        }
-      });
-      
-      return row;
-    });
-  };
-  
-  const chartData = prepareChartData();
-  const summaryData = createSummaryTableData();
-  
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Hospital Ampang Patient Flow Analysis</h1>
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Comparative Analysis by Ward</h2>
-        <p className="mb-4">Select a metric to visualize ward differences:</p>
-        
-        <div className="flex flex-wrap gap-4 mb-4">
-          <select 
-            value={selectedMetric}
-            onChange={(e) => setSelectedMetric(e.target.value)}
-            className="p-2 border rounded"
-          >
-            {metricOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ward" />
-              <YAxis label={{ value: 'Hours', angle: -90, position: 'insideLeft' }} />
-              <Tooltip 
-                formatter={(value, name, props) => {
-                  return [
-                    `Median: ${value.toFixed(2)} hours
-IQR: ${props.payload.q1.toFixed(2)}-${props.payload.q3.toFixed(2)} hours
-Range: ${props.payload.min.toFixed(2)}-${props.payload.max.toFixed(2)} hours
-Mean: ${props.payload.mean.toFixed(2)} hrs (95% CI: ${props.payload.lowerCI.toFixed(2)}-${props.payload.upperCI.toFixed(2)})`,
-                    name
-                  ];
-                }} 
-              />
-              <Legend />
-              <Bar 
-                dataKey="median" 
-                fill="#8884d8" 
-                name={getCurrentMetricLabel()} 
-                isAnimationActive={false}
-              >
-                {chartData.map((entry, index) => (
-                  <ErrorBar 
-                    key={`error-bar-${index}`} 
-                    dataKey={["q1", "q3"]} 
-                    width={8} 
-                    strokeWidth={2}
-                    stroke="#464646" 
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Summary Statistics (Hours)</h2>
-        
-        <div className="flex border-b mb-4">
-          <button 
-            className={`py-2 px-4 ${showMeanStats ? 'border-b-2 border-blue-500 font-medium' : ''}`}
-            onClick={() => setShowMeanStats(true)}
-          >
-            Mean Statistics
-          </button>
-          <button 
-            className={`py-2 px-4 ${!showMeanStats ? 'border-b-2 border-blue-500 font-medium' : ''}`}
-            onClick={() => setShowMeanStats(false)}
-          >
-            Median Statistics
-          </button>
-        </div>
-        
-        <div className="overflow-x-auto">
-          {showMeanStats ? (
-            <table className="min-w-full bg-white border">
-              <thead>
-                <tr>
-                  <th className="border p-2">Metric</th>
-                  {wardOrder.map(ward => (
-                    <th key={ward} className="border p-2">{ward} Mean (95% CI)</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {summaryData.map((row, i) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                    <td className="border p-2 font-semibold">{row.metric}</td>
-                    {wardOrder.map(ward => (
-                      <td key={`${ward}-${i}`} className="border p-2">
-                        {row[`${ward}_mean`]} {row[`${ward}_ci`]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <table className="min-w-full bg-white border">
-              <thead>
-                <tr>
-                  <th className="border p-2">Metric</th>
-                  {wardOrder.map(ward => (
-                    <th key={ward} className="border p-2">{ward} Median (IQR)</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {summaryData.map((row, i) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                    <td className="border p-2 font-semibold">{row.metric}</td>
-                    {wardOrder.map(ward => (
-                      <td key={`${ward}-${i}`} className="border p-2">
-                        {row[`${ward}_median`]} {row[`${ward}_iqr`]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+  // Custom tooltip for the charts
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      // Add the rendering of the React component to the DOM at the end of the file
+  const renderComponent = () => {
+    return (
+        <div className="bg-white p-4 border rounded shadow-lg">
+          <p className="font-bold">{`Ward: ${data.ward}`}</p>
+          <p>{`Median: ${data.median.toFixed(1)} minutes`}</p>
+          <p>{`IQR: ${data.q1.toFixed(1)} - ${data.q3.toFixed(1)} minutes`}</p>
+          {showMean && (
+            <>
+              <p>{`Mean: ${data.mean.toFixed(1)} minutes`}</p>
+              <p>{`95% CI: ${data.ciLower.toFixed(1)} - ${data.ciUpper.toFixed(1)}`}</p>
+            </>
           )}
         </div>
-        
+      );
+    }
+    return null;
+  };
+
+  // Custom tooltip for hourly patterns
+  const HourlyTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-4 border rounded shadow-lg">
+          <p className="font-bold">{`Hour: ${label}:00`}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.name}: ${entry.value} patients`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Hospital Ampang Patient Flow Analysis</h1>
+        <p className="text-gray-600">
+          Analysis of patient flow from ETD to wards W6A, W6B, W6C, and W6D. Time measurements in minutes.
+        </p>
         <div className="mt-4">
-          <h3 className="text-lg font-semibold">Key Findings with Statistical Significance (with Bonferroni Correction):</h3>
-          <ul className="list-disc pl-6 mt-2">
-            <li><strong>Total Processing Time:</strong>
-              <ul>
-                <li>W6A has significantly faster total processing time than W6B (mean diff: -6.43 hrs, 95% CI: -9.74 to -3.12, p&lt;0.001, adjusted p=0.003)</li>
-                <li>W6A has faster total processing time than W6D (mean diff: -4.16 hrs, 95% CI: -7.19 to -1.13, p=0.007, adjusted p=0.17) (NS after correction)</li>
-              </ul>
-            </li>
-            <li><strong>Booking to Allocation Time:</strong>
-              <ul>
-                <li>W6A has significantly shorter booking-to-allocation time than W6B (mean diff: -6.28 hrs, 95% CI: -9.58 to -2.99, p&lt;0.001, adjusted p=0.005)</li>
-                <li>W6A has shorter booking-to-allocation time than W6C (mean diff: -3.11 hrs, 95% CI: -6.22 to -0.01, p=0.049, adjusted p=1.0) (NS after correction)</li>
-                <li>W6A has shorter booking-to-allocation time than W6D (mean diff: -4.48 hrs, 95% CI: -7.48 to -1.49, p=0.003, adjusted p=0.08) (NS after correction)</li>
-              </ul>
-            </li>
-            <li><strong>Allocation to Arrival Time:</strong>
-              <ul>
-                <li>W6D has significantly shorter allocation-to-arrival time than W6B (mean diff: 0.54 hrs, 95% CI: 0.27 to 0.82, p&lt;0.001, adjusted p=0.003)</li>
-                <li>W6D has significantly shorter allocation-to-arrival time than W6C (mean diff: 0.34 hrs, 95% CI: 0.16 to 0.51, p&lt;0.001, adjusted p=0.005)</li>
-                <li>W6D has shorter allocation-to-arrival time than W6A (mean diff: 0.39 hrs, 95% CI: 0.12 to 0.65, p=0.005, adjusted p=0.11) (NS after correction)</li>
-              </ul>
-            </li>
-            <li><strong>Booking to Arrival Time:</strong>
-              <ul>
-                <li>W6A has significantly shorter booking-to-arrival time than W6B (mean diff: -6.92 hrs, 95% CI: -10.35 to -3.49, p&lt;0.001, adjusted p=0.002)</li>
-                <li>W6A has shorter booking-to-arrival time than W6C (mean diff: -3.26 hrs, 95% CI: -6.44 to -0.08, p=0.044, adjusted p=1.0) (NS after correction)</li>
-                <li>W6A has shorter booking-to-arrival time than W6D (mean diff: -4.51 hrs, 95% CI: -7.59 to -1.44, p=0.004, adjusted p=0.10) (NS after correction)</li>
-              </ul>
-            </li>
-            <li>Note: NS = Not Significant after Bonferroni correction for multiple comparisons (24 tests)</li>
-            <li>All wards show high variability (wide IQRs) indicating inconsistent processes.</li>
-          </ul>
+          <label className="inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={showMean} 
+              onChange={() => setShowMean(!showMean)}
+              className="mr-2"
+            />
+            <span>Show Mean & 95% CI</span>
+          </label>
         </div>
       </div>
-      
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Quality Improvement Recommendations</h2>
-        <ul className="list-disc pl-6">
-          <li><strong>Process Improvement Opportunity:</strong> Adopt W6A's bed allocation processes across all wards, particularly in W6B. This could potentially reduce total processing time by up to 6.43 hours in W6B (95% CI: 3.12-9.74 hours, p&lt;0.001, adjusted p=0.003).</li>
-          
-          <li><strong>Booking-to-Allocation Standardization:</strong> Study and standardize W6A's booking-to-allocation workflow, which is significantly faster than W6B (mean diff: -6.28 hrs, p&lt;0.001, adjusted p=0.005). While W6A also performs better than W6C and W6D, these differences did not remain significant after Bonferroni correction.</li>
-          
-          <li><strong>Transfer Process Enhancement:</strong> Implement W6D's allocation-to-arrival practices across all wards. W6D is significantly more efficient than both W6B (mean diff: 0.54 hrs, p&lt;0.001, adjusted p=0.003) and W6C (mean diff: 0.34 hrs, p&lt;0.001, adjusted p=0.005), even after Bonferroni correction.</li>
-          
-          <li><strong>Real-time Monitoring System:</strong> Develop a dashboard to track these key metrics with statistical process control methods to identify when processes drift outside expected performance levels.</li>
-          
-          <li><strong>Targeted Wait Time Reduction:</strong> Set specific targets based on statistically significant findings:
-            <ul>
-              <li>Booking-to-allocation target: 7.11 hours (W6A's current median)</li>
-              <li>Allocation-to-arrival target: 0.66 hours (W6D's current median)</li>
-              <li>Total process time target: 8.16 hours (W6A's current median)</li>
-            </ul>
-          </li>
-          
-          <li><strong>Process Variability Reduction:</strong> Address the wide interquartile ranges to deliver more consistent patient care experiences. Focus particularly on W6B, which shows the highest variability.</li>
-          
-          <li><strong>Cross-Functional Process Improvement Team:</strong> Form a team with staff from W6A (for booking-to-allocation expertise) and W6D (for allocation-to-arrival expertise) to develop standardized workflows for all wards based on the statistically significant differences found.</li>
-        </ul>
-      </div>
-      
-      <footer className="mt-8 pt-4
-          <footer className="mt-8 pt-4 border-t text-sm text-gray-600">
-        <p>© 2025 Hospital Ampang Patient Flow Analysis</p>
-        <p>This analysis is licensed under GNU Affero General Public License v3.0 (AGPL-3.0)</p>
-      </footer>
-    </div>
-  );
-}
 
-// Render the application to the DOM
-ReactDOM.render(
-  <PatientFlowAnalysis />,
-  document.getElementById('root')
-);
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="text-xl font-semibold mb-4">Transfer Time by Ward</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={transferTimeByWard}
+                margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="ward" />
+                <YAxis label={{ value: 'Minutes', angle: -90, position: 'insideLeft' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar 
+                  dataKey={showMean ? "mean" : "median"} 
+                  fill="#8884d8" 
+                  name={showMean ? "Mean Transfer Time" : "Median Transfer Time"} 
+                >
+                  {showMean && (
+                    <ErrorBar dataKey="errorBar" width={4} strokeWidth={2} stroke="#8884d8" />
+                  )}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-2 text-sm text-center text-gray-500">
+            {comparisons.transferTime.significant ? (
+              <p>Significant difference between wards (p = {comparisons.transferTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
+            ) : (
+              <p>No significant difference between wards (p = {comparisons.transferTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="text-xl font-semibold mb-4">ETD Time by Ward</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={etdTimeByWard}
+                margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="ward" />
+                <YAxis label={{ value: 'Minutes', angle: -90, position: 'insideLeft' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar 
+                  dataKey={showMean ? "mean" : "median"} 
+                  fill="#82ca9d" 
+                  name={showMean ? "Mean ETD Time" : "Median ETD Time"} 
+                >
+                  {showMean && (
+                    <ErrorBar dataKey="errorBar" width={4} strokeWidth={2} stroke="#82ca9d" />
+                  )}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-2 text-sm text-center text-gray-500">
+            {comparisons.etdTime.significant ? (
+              <p>Significant difference between wards (p = {comparisons.etdTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
+            ) : (
+              <p>No significant difference between wards (p = {comparisons.etdTime.pValue.toFixed(3)}, Kruskal-Wallis H test)</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-4 rounded shadow mb-8">
+        <h2 className="text-xl font-semibold mb-4">Hourly Pattern Analysis</h2>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={hourlyPatternData}
+              margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="hour" 
+                label={{ value: 'Hour of Day', position: 'insideBottom', offset: -10 }}
+                tickFormatter={(hour) => `${hour}:00`}
+              />
+              <YAxis label={{ value: 'Number of Patients', angle: -90, position: 'insideLeft' }} />
+              <Tooltip content={<HourlyTooltip />} />
+              <Legend />
+              <Line type="monotone" dataKey="booktime" stroke="#8884d8" name="Booking Time" />
+              <Line type="monotone" dataKey="alloctime" stroke="#82ca9d" name="Allocation Time" />
+              <Line type="monotone" dataKey="regtime" stroke="#ffc658" name="Registration Time" />
+              <Line type="monotone" dataKey="arrtime" stroke="#ff7300" name="Arrival Time" />
