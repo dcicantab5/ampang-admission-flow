@@ -1,348 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ampang Admission Flow Analysis</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- ApexCharts -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <style>
-        .card {
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .stat-card {
-            transition: transform 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        .recommendation {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .finding {
-            background-color: #e9ecef;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .dashboard-header {
-            background: linear-gradient(to right, #1a237e, #283593);
-            color: white;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
-        .nav-pills .nav-link.active {
-            background-color: #1a237e;
-        }
-        .table-responsive {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ampang Admission Flow Analysis</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding-top: 20px;
+      background-color: #f8f9fa;
+    }
+    .card {
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      border: none;
+    }
+    .card-header {
+      background-color: #4361ee;
+      color: white;
+      font-weight: 600;
+      border-radius: 8px 8px 0 0 !important;
+    }
+    .chart-container {
+      height: 300px;
+      position: relative;
+    }
+    .highlight-box {
+      background-color: #e9ecef;
+      border-left: 4px solid #4361ee;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 0 4px 4px 0;
+    }
+    .findings-list li, .recommendations-list li {
+      margin-bottom: 8px;
+      padding-left: 5px;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: #4361ee;
+      color: white;
+      border-color: #4361ee;
+    }
+    .nav-tabs .nav-link {
+      color: #4361ee;
+    }
+    #loadingSpinner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard-header">
-        <div class="container">
-            <h1 class="text-center">Ampang Admission Flow Analysis</h1>
-            <p class="text-center" id="generatedDate">Generated: Loading...</p>
+  <div id="loadingSpinner">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center">
+            <h1 class="card-title">Ampang Admission Flow Analysis</h1>
+            <p class="text-muted" id="reportDate">Generated: </p>
+            <div class="d-flex justify-content-around">
+              <div>
+                <h5>Total Patients</h5>
+                <h2 id="totalPatients" class="text-primary">-</h2>
+              </div>
+              <div>
+                <h5>W6A</h5>
+                <h3 id="countW6A" class="text-success">-</h3>
+              </div>
+              <div>
+                <h5>W6B</h5>
+                <h3 id="countW6B" class="text-info">-</h3>
+              </div>
+              <div>
+                <h5>W6C</h5>
+                <h3 id="countW6C" class="text-warning">-</h3>
+              </div>
+              <div>
+                <h5>W6D</h5>
+                <h3 id="countW6D" class="text-danger">-</h3>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <div class="container">
-        <ul class="nav nav-pills mb-4 justify-content-center" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="etd-tab" data-bs-toggle="pill" data-bs-target="#etd" type="button" role="tab" aria-controls="etd" aria-selected="false">ETD Time</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="transfer-tab" data-bs-toggle="pill" data-bs-target="#transfer" type="button" role="tab" aria-controls="transfer" aria-selected="false">Transfer Time</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="hourly-tab" data-bs-toggle="pill" data-bs-target="#hourly" type="button" role="tab" aria-controls="hourly" aria-selected="false">Hourly Distribution</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="recommendations-tab" data-bs-toggle="pill" data-bs-target="#recommendations" type="button" role="tab" aria-controls="recommendations" aria-selected="false">Findings & Recommendations</button>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="myTabContent">
-            <!-- Overview Tab -->
-            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Patient Distribution by Ward</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="wardDistributionChart" style="height: 350px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Ward Summary Statistics</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Ward</th>
-                                                <th>Patients</th>
-                                                <th>ETD Time (Median)</th>
-                                                <th>Transfer Time (Median)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="wardSummaryTable">
-                                            <!-- Ward summary will be dynamically inserted here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Circular Statistics - Mean Admission Hour</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="circularStatsChart" style="height: 350px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">ETD Time by Ward (Minutes)</div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="etdTimeChart"></canvas>
             </div>
-
-            <!-- ETD Time Tab -->
-            <div class="tab-pane fade" id="etd" role="tabpanel" aria-labelledby="etd-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">ETD Time Comparison by Ward</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="etdComparisonChart" style="height: 400px;"></div>
-                                <div class="mt-3">
-                                    <strong>Kruskal-Wallis Test Result:</strong> <span id="etdKruskalWallis"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">ETD Time Statistics by Ward</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Ward</th>
-                                                <th>Mean</th>
-                                                <th>Median</th>
-                                                <th>Min</th>
-                                                <th>Max</th>
-                                                <th>Q1</th>
-                                                <th>Q3</th>
-                                                <th>Std Dev</th>
-                                                <th>95% CI</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="etdStatsTable">
-                                            <!-- ETD stats will be dynamically inserted here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="mt-3">
+              <p><strong>Statistical Analysis:</strong> <span id="etdStatTest"></span></p>
             </div>
-
-            <!-- Transfer Time Tab -->
-            <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Transfer Time Comparison by Ward</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="transferComparisonChart" style="height: 400px;"></div>
-                                <div class="mt-3">
-                                    <strong>Kruskal-Wallis Test Result:</strong> <span id="transferKruskalWallis"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Transfer Time Statistics by Ward</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Ward</th>
-                                                <th>Mean</th>
-                                                <th>Median</th>
-                                                <th>Min</th>
-                                                <th>Max</th>
-                                                <th>Q1</th>
-                                                <th>Q3</th>
-                                                <th>Std Dev</th>
-                                                <th>95% CI</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="transferStatsTable">
-                                            <!-- Transfer stats will be dynamically inserted here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hourly Distribution Tab -->
-            <div class="tab-pane fade" id="hourly" role="tabpanel" aria-labelledby="hourly-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Hourly Distribution</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="hourlyDistributionChart" style="height: 400px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Peak Hours by Ward</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 col-lg-3 mb-3" id="peakHoursW6A">
-                                        <div class="card h-100">
-                                            <div class="card-header bg-info text-white">
-                                                <h5 class="card-title mb-0">W6A</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <!-- Peak hours for W6A will be inserted here -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-3 mb-3" id="peakHoursW6B">
-                                        <div class="card h-100">
-                                            <div class="card-header bg-info text-white">
-                                                <h5 class="card-title mb-0">W6B</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <!-- Peak hours for W6B will be inserted here -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-3 mb-3" id="peakHoursW6C">
-                                        <div class="card h-100">
-                                            <div class="card-header bg-info text-white">
-                                                <h5 class="card-title mb-0">W6C</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <!-- Peak hours for W6C will be inserted here -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-3 mb-3" id="peakHoursW6D">
-                                        <div class="card h-100">
-                                            <div class="card-header bg-info text-white">
-                                                <h5 class="card-title mb-0">W6D</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <!-- Peak hours for W6D will be inserted here -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Findings & Recommendations Tab -->
-            <div class="tab-pane fade" id="recommendations" role="tabpanel" aria-labelledby="recommendations-tab">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Key Findings</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="keyFindings">
-                                    <!-- Key findings will be dynamically inserted here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">Recommended Interventions</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="recommendedInterventions">
-                                    <!-- Recommended interventions will be dynamically inserted here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">Transfer Time by Ward (Minutes)</div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="transferTimeChart"></canvas>
+            </div>
+            <div class="mt-3">
+              <p><strong>Statistical Analysis:</strong> <span id="transferStatTest"></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <footer class="bg-dark text-white mt-5 py-3">
-        <div class="container text-center">
-            <p>Ampang Admission Flow Analysis Dashboard</p>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">Hourly Distribution</div>
+          <div class="card-body">
+            <ul class="nav nav-tabs" id="hourlyTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-content" type="button" role="tab" aria-controls="all-content" aria-selected="true">All</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="booking-tab" data-bs-toggle="tab" data-bs-target="#booking-content" type="button" role="tab" aria-controls="booking-content" aria-selected="false">Booking</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="allocation-tab" data-bs-toggle="tab" data-bs-target="#allocation-content" type="button" role="tab" aria-controls="allocation-content" aria-selected="false">Allocation</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="registration-tab" data-bs-toggle="tab" data-bs-target="#registration-content" type="button" role="tab" aria-controls="registration-content" aria-selected="false">Registration</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="arrival-tab" data-bs-toggle="tab" data-bs-target="#arrival-content" type="button" role="tab" aria-controls="arrival-content" aria-selected="false">Arrival</button>
+              </li>
+            </ul>
+            <div class="tab-content p-3" id="hourlyTabContent">
+              <div class="tab-pane fade show active" id="all-content" role="tabpanel" aria-labelledby="all-tab">
+                <div class="chart-container">
+                  <canvas id="allHourlyChart"></canvas>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="booking-content" role="tabpanel" aria-labelledby="booking-tab">
+                <div class="chart-container">
+                  <canvas id="bookingHourlyChart"></canvas>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="allocation-content" role="tabpanel" aria-labelledby="allocation-tab">
+                <div class="chart-container">
+                  <canvas id="allocationHourlyChart"></canvas>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="registration-content" role="tabpanel" aria-labelledby="registration-tab">
+                <div class="chart-container">
+                  <canvas id="registrationHourlyChart"></canvas>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="arrival-content" role="tabpanel" aria-labelledby="arrival-tab">
+                <div class="chart-container">
+                  <canvas id="arrivalHourlyChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">Peak Admission Hours by Ward</div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="peakHoursChart"></canvas>
+            </div>
+            <div class="mt-3">
+              <h6>Mean Admission Times:</h6>
+              <ul class="list-group list-group-flush" id="meanAdmissionTimes">
+                <!-- Will be populated by JavaScript -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">Key Findings & Recommendations</div>
+          <div class="card-body">
+            <ul class="nav nav-tabs" id="findingsTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="findings-tab" data-bs-toggle="tab" data-bs-target="#findings-content" type="button" role="tab" aria-controls="findings-content" aria-selected="true">Findings</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations-content" type="button" role="tab" aria-controls="recommendations-content" aria-selected="false">Recommendations</button>
+              </li>
+            </ul>
+            <div class="tab-content p-3" id="findingsTabContent">
+              <div class="tab-pane fade show active" id="findings-content" role="tabpanel" aria-labelledby="findings-tab">
+                <ul class="findings-list" id="keyFindingsList">
+                  <!-- Will be populated by JavaScript -->
+                </ul>
+              </div>
+              <div class="tab-pane fade" id="recommendations-content" role="tabpanel" aria-labelledby="recommendations-tab">
+                <ul class="recommendations-list" id="recommendationsList">
+                  <!-- Will be populated by JavaScript -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center mt-4 mb-5">
+      <p class="text-muted">Ampang Admission Flow Analysis Dashboard | <span id="footerDate"></span></p>
     </footer>
+  </div>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- App JS -->
-    <script src="app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
