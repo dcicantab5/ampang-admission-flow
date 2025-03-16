@@ -262,7 +262,7 @@
     "circularStats": {
       "W6A": {
         "n": 110,
-        "meanHour": 19.4,
+        "meanHour": "19:24",
         "meanAngle": 5.077,
         "r": 0.244,
         "circularVariance": 0.756,
@@ -273,7 +273,7 @@
       },
       "W6B": {
         "n": 108,
-        "meanHour": 17.9,
+        "meanHour": "17:54",
         "meanAngle": 4.676,
         "r": 0.381,
         "circularVariance": 0.619,
@@ -284,7 +284,7 @@
       },
       "W6C": {
         "n": 96,
-        "meanHour": 19.9,
+        "meanHour": "19:54",
         "meanAngle": 5.209,
         "r": 0.409,
         "circularVariance": 0.591,
@@ -295,7 +295,7 @@
       },
       "W6D": {
         "n": 99,
-        "meanHour": 21.9,
+        "meanHour": "21:54",
         "meanAngle": 5.733,
         "r": 0.323,
         "circularVariance": 0.677,
