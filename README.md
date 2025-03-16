@@ -4,7 +4,7 @@
 
 This repository contains an interactive dashboard for analyzing patient flow from the Emergency and Trauma Department (ETD) to admission wards at Hospital Ampang. The analysis focuses on four wards (W6A, W6B, W6C, and W6D) and provides comprehensive statistical insights into ETD times, transfer times, and temporal patterns of patient admissions.
 
-![Ampang Admission Flow Analysis Dashboard](https://via.placeholder.com/800x400?text=Ampang+Admission+Flow+Analysis)
+![Ampang Admission Flow Analysis Dashboard](https://dcicantab5.github.io/ampang-admission-flow/)
 
 ## Features
 
