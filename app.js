@@ -410,7 +410,7 @@ function initializePeakHoursTab(peakHoursData, circularStats) {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${ward}</td>
-      <td>${stats.meanHour.toFixed(1)}:00</td>
+      <td>${stats.meanHour}</td>
       <td>< ${stats.rayleighP.toFixed(3)}</td>
       <td>Clustered (non-uniform)</td>
     `;
