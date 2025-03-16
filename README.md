@@ -1,71 +1,83 @@
-# Hospital Ampang Patient Flow Analysis
-
-This repository contains a dashboard visualization for analyzing patient flow from the Emergency and Trauma Department (ETD) to different wards in Hospital Ampang.
+# Ampang Admission Flow Analysis
 
 ## Overview
 
-The analysis visualizes the flow of patients from ETD to four different wards (W6A, W6B, W6C, and W6D), focusing on the following metrics:
+This repository contains an interactive dashboard for analyzing patient flow from the Emergency and Trauma Department (ETD) to admission wards at Hospital Ampang. The analysis focuses on four wards (W6A, W6B, W6C, and W6D) and provides comprehensive statistical insights into ETD times, transfer times, and temporal patterns of patient admissions.
 
-- Transfer time from booking to arrival at wards
-- Time spent in ETD
-- Time patterns throughout the day
-- Statistical comparisons between wards
-
-## Live Demo
-
-The dashboard is available at: [https://dcicantab5.github.io/ampang-admission-flow/](https://dcicantab5.github.io/ampang-admission-flow/)
+![Ampang Admission Flow Analysis Dashboard](https://via.placeholder.com/800x400?text=Ampang+Admission+Flow+Analysis)
 
 ## Features
 
-- Interactive visualizations showing median and mean times with error bars
-- Hourly pattern analysis showing peak times for different process steps
-- Statistical comparisons between wards (ANOVA)
-- Detailed data tables with summary statistics
-- Toggle between median and mean visualizations
+- **Interactive Dashboard**: Navigate between different analysis views using a tabbed interface
+- **Multiple Visualization Types**: Bar charts, line charts, and pie charts presenting different aspects of the data
+- **Statistical Analysis**: Includes descriptive statistics, Kruskal-Wallis H test results, and circular statistics
+- **24-Hour Distribution Analysis**: Visualizes booking, allocation, registration, and arrival patterns throughout the day
+- **Peak Hours Identification**: Highlights peak admission times for each ward
+- **Quality Improvement Insights**: Provides data-driven recommendations for process improvement
 
-## Data Analysis Methods
+## Data Analysis Components
 
-- **Transfer Time**: Time from bed allocation to arrival at the ward
-- **ETD Time**: Duration spent in the Emergency and Trauma Department
-- **Statistical Testing**: 
-  - Kruskal-Wallis H test for non-parametric comparison between wards
-  - Circular statistics (Rayleigh test, Kuiper's test) for hourly pattern analysis
-- **Confidence Intervals**: 95% confidence intervals for means
+1. **Overview**: Patient distribution by ward and summary statistics
+2. **ETD Time Analysis**: Comparison of time spent in ETD before ward admission
+3. **Transfer Time Analysis**: Analysis of time from bed allocation to ward arrival
+4. **Peak Hours Analysis**: Identification of peak admission times for each ward
+5. **24-Hour Distribution**: Visualization of process timings throughout the day
 
-## Findings
+## Statistical Methods
 
-1. **Transfer Times by Ward**:
-   - Ward W6D shows the shortest median transfer time (152.4 minutes)
-   - Ward W6B has the highest median transfer time (196.1 minutes)
-   - No statistically significant differences between wards (p = 0.303, Kruskal-Wallis)
+- **Descriptive Statistics**: Mean, median, interquartile range (IQR), and 95% confidence intervals
+- **Kruskal-Wallis H Test**: Non-parametric method for comparing medians among multiple independent groups
+- **Circular Statistics**: Specialized methods for analyzing cyclical time data, including Rayleigh test for uniformity
 
-2. **ETD Times by Ward**:
-   - Ward W6B has the shortest median ETD time (443.7 minutes)
-   - Ward W6D has the longest median ETD time (1664.4 minutes)
-   - No statistically significant differences between wards (p = 0.743, Kruskal-Wallis)
+## Key Findings
 
-3. **Peak Hours**:
-   - Booking: No significant daily pattern (p=0.802, Rayleigh test)
-   - Bed Allocation: Mean time 16:50 (95% CI: 14:57-18:43), with peak at 20:00
-   - Registration: Mean time 17:40 (95% CI: 15:54-19:26), with peak at 20:00
-   - Ward Arrival: Mean time 20:10 (95% CI: 18:30-21:50), with peak at 23:00
+- ETD times differ significantly between wards (p = 0.016)
+- Ward W6D has the highest median ETD time (685.8 min)
+- Ward W6A has the lowest median ETD time (376.3 min)
+- Transfer times differ highly significantly between wards (p < 0.001)
+- Ward W6D has the shortest transfer time (median 39.3 min)
+- Ward W6B has the longest transfer time (median 56.1 min)
+- Evening hours (18:00-20:00) are peak admission times for all wards
+- Registration times show a notable peak at 20:00 (12.6% of all registrations)
 
 ## Quality Improvement Recommendations
 
-1. **Standardize transfer processes** across all wards to reduce variability
-2. **Address peak hours** with appropriate staffing and resources
-3. **Review ETD to ward workflows** to identify bottlenecks
-4. **Implement real-time monitoring** of patient flow metrics
+- Standardize transfer processes across all wards to reduce variability
+- Investigate reasons for longer ETD times in W6D
+- Optimize staffing during peak arrival and registration hours (17:00-20:00)
+- Apply W6D transfer process improvements to other wards
+- Consider staggered discharge times to better accommodate peak admission periods
+- Improve coordination between booking, allocation, registration, and arrival processes
+- Review patient flow to reduce extended ETD stays (some exceeding 48 hours)
 
 ## Technical Implementation
 
-This dashboard is built using:
+This dashboard is implemented as a static web application using:
+- **React**: For building the user interface
+- **Recharts**: For data visualization
+- **Tailwind CSS**: For styling
 
-- React.js for the UI components
-- Recharts for data visualization
-- Tailwind CSS for styling
-- Static deployment on GitHub Pages
+The application is designed to be hosted directly on GitHub Pages without requiring a build process or server-side components.
+
+## Files in this Repository
+
+- **index.html**: Main HTML file that loads the required dependencies
+- **app.js**: React application that renders the interactive dashboard
+- **data.json**: Comprehensive analysis results in JSON format
+
+## Deployment
+
+This repository is set up for direct deployment on GitHub Pages. The live dashboard can be accessed at: [https://dcicantab5.github.io/ampang-admission-analysis/](https://dcicantab5.github.io/ampang-admission-analysis/)
+
+## Data Source
+
+The analysis is based on patient flow data from Hospital Ampang, collected in February - March 2025. The dataset includes admission records with timestamps for key events in the patient journey from ETD to wards.
 
 ## License
 
-This project is available under the AGPL 3.0 License.
+This project is licensed under the AGPL3.0 License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Hospital Ampang's Quality Unit & BMU for providing the data
+- The medical and administrative staff involved in patient care
