@@ -8,45 +8,98 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding-top: 20px;
-      background-color: #f8f9fa;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      color: #333;
+      line-height: 1.6;
+      background-color: #fff;
+      padding: 20px 0;
     }
-    .card {
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      border: none;
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 500;
     }
-    .card-header {
-      background-color: #4361ee;
-      color: white;
-      font-weight: 600;
-      border-radius: 8px 8px 0 0 !important;
+    
+    .nav-tabs {
+      margin-bottom: 30px;
+      justify-content: center;
+      border-bottom: 1px solid #dee2e6;
     }
-    .chart-container {
-      height: 300px;
-      position: relative;
+    
+    .nav-tabs .nav-link {
+      border-radius: 0.5rem 0.5rem 0 0;
+      padding: 8px 20px;
+      font-weight: 500;
+      color: #495057;
+      margin-right: 5px;
+      background-color: #f0f0f0;
+      border: 1px solid #dee2e6;
     }
-    .highlight-box {
-      background-color: #e9ecef;
-      border-left: 4px solid #4361ee;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 0 4px 4px 0;
-    }
-    .findings-list li, .recommendations-list li {
-      margin-bottom: 8px;
-      padding-left: 5px;
-    }
+    
     .nav-tabs .nav-link.active {
       background-color: #4361ee;
       color: white;
       border-color: #4361ee;
     }
-    .nav-tabs .nav-link {
-      color: #4361ee;
+    
+    .tab-content {
+      padding: 20px 0;
     }
+    
+    .chart-container {
+      width: 100%;
+      height: 400px;
+      position: relative;
+      margin-bottom: 30px;
+    }
+    
+    .chart-container-small {
+      width: 100%;
+      height: 300px;
+      position: relative;
+      margin-bottom: 30px;
+    }
+    
+    .section-title {
+      margin-bottom: 20px;
+      font-weight: 500;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    table {
+      width: 100%;
+      margin-bottom: 30px;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    
+    th {
+      background-color: #f8f9fa;
+      font-weight: 500;
+    }
+    
+    ul {
+      padding-left: 20px;
+    }
+    
+    li {
+      margin-bottom: 8px;
+    }
+    
+    .stat-methods {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: #666;
+    }
+    
     #loadingSpinner {
       position: fixed;
       top: 0;
@@ -59,6 +112,26 @@
       align-items: center;
       z-index: 9999;
     }
+    
+    .peak-hours-table {
+      margin-bottom: 30px;
+    }
+    
+    .peak-hours-title {
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    
+    .observations {
+      margin-top: 30px;
+    }
+    
+    footer {
+      margin-top: 40px;
+      color: #777;
+      text-align: center;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -69,170 +142,233 @@
   </div>
 
   <div class="container">
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-body text-center">
-            <h1 class="card-title">Ampang Admission Flow Analysis</h1>
-            <p class="text-muted" id="reportDate">Generated: </p>
-            <div class="d-flex justify-content-around">
-              <div>
-                <h5>Total Patients</h5>
-                <h2 id="totalPatients" class="text-primary">-</h2>
-              </div>
-              <div>
-                <h5>W6A</h5>
-                <h3 id="countW6A" class="text-success">-</h3>
-              </div>
-              <div>
-                <h5>W6B</h5>
-                <h3 id="countW6B" class="text-info">-</h3>
-              </div>
-              <div>
-                <h5>W6C</h5>
-                <h3 id="countW6C" class="text-warning">-</h3>
-              </div>
-              <div>
-                <h5>W6D</h5>
-                <h3 id="countW6D" class="text-danger">-</h3>
-              </div>
-            </div>
-          </div>
+    <h1>Ampang Admission Flow Analysis</h1>
+    
+    <ul class="nav nav-tabs" id="analysisTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="etd-tab" data-bs-toggle="tab" data-bs-target="#etd" type="button" role="tab" aria-controls="etd" aria-selected="false">ETD Time</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer" type="button" role="tab" aria-controls="transfer" aria-selected="false">Transfer Time</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="peakhours-tab" data-bs-toggle="tab" data-bs-target="#peakhours" type="button" role="tab" aria-controls="peakhours" aria-selected="false">Peak Hours</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="distribution-tab" data-bs-toggle="tab" data-bs-target="#distribution" type="button" role="tab" aria-controls="distribution" aria-selected="false">24h Distribution</button>
+      </li>
+    </ul>
+    
+    <div class="tab-content" id="analysisTabContent">
+      <!-- Overview Tab -->
+      <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+        <h3 class="section-title">Patient Distribution by Ward</h3>
+        <div class="chart-container-small">
+          <canvas id="patientDistributionChart"></canvas>
+        </div>
+        
+        <h3 class="section-title">Key Findings:</h3>
+        <ul id="overviewFindings">
+          <!-- Will be populated by JavaScript -->
+        </ul>
+        
+        <h3 class="section-title">Summary Statistics</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Ward</th>
+              <th>Count</th>
+              <th>Median ETD Time (min)</th>
+              <th>Median Transfer Time (min)</th>
+            </tr>
+          </thead>
+          <tbody id="summaryTable">
+            <!-- Will be populated by JavaScript -->
+          </tbody>
+        </table>
+        
+        <h3 class="section-title">Statistical Analysis Summary</h3>
+        
+        <h4>ETD Time Comparison</h4>
+        <p id="etdTimeComparison"><!-- Will be populated by JavaScript --></p>
+        <p id="circularStatistics"><!-- Will be populated by JavaScript --></p>
+        
+        <h4>Transfer Time Comparison</h4>
+        <p id="transferTimeComparison"><!-- Will be populated by JavaScript --></p>
+        <p id="keyFindingTransfer"><!-- Will be populated by JavaScript --></p>
+        <p id="correction"><!-- Will be populated by JavaScript --></p>
+        
+        <div class="stat-methods">
+          <h3 class="section-title">Statistical Methods:</h3>
+          <ol>
+            <li>Descriptive statistics: mean, median, interquartile range (IQR), and 95% confidence intervals.</li>
+            <li>Kruskal-Wallis H test: non-parametric method for comparing medians among multiple independent groups.</li>
+            <li>Circular statistics: specialized methods for analyzing cyclical time data, including Rayleigh test for uniformity.</li>
+          </ol>
+        </div>
+      </div>
+      
+      <!-- ETD Time Tab -->
+      <div class="tab-pane fade" id="etd" role="tabpanel" aria-labelledby="etd-tab">
+        <h3 class="section-title">ETD Time Analysis by Ward</h3>
+        <p>ETD time represents the duration patients spend in the Emergency and Trauma Department before ward admission. Below chart shows median ETD times with interquartile ranges.</p>
+        
+        <div class="chart-container">
+          <canvas id="etdTimeChart"></canvas>
+        </div>
+        
+        <h3 class="section-title">ETD Time Statistics Table</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Ward</th>
+              <th>Mean (95% CI)</th>
+              <th>Median</th>
+              <th>IQR</th>
+              <th>Min</th>
+              <th>Max</th>
+            </tr>
+          </thead>
+          <tbody id="etdStatsTable">
+            <!-- Will be populated by JavaScript -->
+          </tbody>
+        </table>
+        
+        <h3 class="section-title">Statistical Analysis Results</h3>
+        <h4>Kruskal-Wallis H Test for ETD Time:</h4>
+        <p id="etdKruskalWallis"><!-- Will be populated by JavaScript --></p>
+        <p id="etdInterpretation"><!-- Will be populated by JavaScript --></p>
+        
+        <h3 class="section-title">Key Findings:</h3>
+        <ul id="etdKeyFindings">
+          <!-- Will be populated by JavaScript -->
+        </ul>
+        
+        <div class="stat-methods">
+          <h3 class="section-title">Statistical Methods:</h3>
+          <ol>
+            <li>Descriptive statistics: mean, median, interquartile range (IQR), and 95% confidence intervals.</li>
+            <li>Kruskal-Wallis H test: non-parametric method for comparing medians among multiple independent groups.</li>
+            <li>Circular statistics: specialized methods for analyzing cyclical time data, including Rayleigh test for uniformity.</li>
+          </ol>
+        </div>
+      </div>
+      
+      <!-- Transfer Time Tab -->
+      <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">
+        <h3 class="section-title">Transfer Time Analysis by Ward</h3>
+        <p>Transfer time represents the duration from bed allocation until the patient's arrival at the ward. Below chart shows median transfer times with interquartile ranges.</p>
+        
+        <div class="chart-container">
+          <canvas id="transferTimeChart"></canvas>
+        </div>
+        
+        <h3 class="section-title">Transfer Time Statistics Table</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Ward</th>
+              <th>Mean (95% CI)</th>
+              <th>Median</th>
+              <th>IQR</th>
+              <th>Min</th>
+              <th>Max</th>
+            </tr>
+          </thead>
+          <tbody id="transferStatsTable">
+            <!-- Will be populated by JavaScript -->
+          </tbody>
+        </table>
+        
+        <h3 class="section-title">Statistical Analysis Results</h3>
+        <h4>Kruskal-Wallis H Test for Transfer Time:</h4>
+        <p id="transferKruskalWallis"><!-- Will be populated by JavaScript --></p>
+        <p id="transferInterpretation"><!-- Will be populated by JavaScript --></p>
+        
+        <h3 class="section-title">Key Findings:</h3>
+        <ul id="transferKeyFindings">
+          <!-- Will be populated by JavaScript -->
+        </ul>
+        
+        <div class="stat-methods">
+          <h3 class="section-title">Statistical Methods:</h3>
+          <ol>
+            <li>Descriptive statistics: mean, median, interquartile range (IQR), and 95% confidence intervals.</li>
+            <li>Kruskal-Wallis H test: non-parametric method for comparing medians among multiple independent groups.</li>
+            <li>Circular statistics: specialized methods for analyzing cyclical time data, including Rayleigh test for uniformity.</li>
+          </ol>
+        </div>
+      </div>
+      
+      <!-- Peak Hours Tab -->
+      <div class="tab-pane fade" id="peakhours" role="tabpanel" aria-labelledby="peakhours-tab">
+        <h3 class="section-title">Peak Admission Hours Analysis</h3>
+        <p>This analysis identifies the hours of the day when most patients arrive at the wards. Understanding peak admission times can help optimize staffing and resource allocation.</p>
+        
+        <div id="peakHoursTables">
+          <!-- Will be populated by JavaScript -->
+        </div>
+        
+        <h3 class="section-title">Circular Statistics for Admission Times</h3>
+        <p>Circular statistics treats time as a circular variable, allowing proper analysis of daily patterns.</p>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Ward</th>
+              <th>Mean Hour</th>
+              <th>Uniformity Test p-value</th>
+              <th>Distribution Pattern</th>
+            </tr>
+          </thead>
+          <tbody id="circularStatsTable">
+            <!-- Will be populated by JavaScript -->
+          </tbody>
+        </table>
+        
+        <h3 class="section-title">Key Findings</h3>
+        <ul id="peakHoursFindings">
+          <!-- Will be populated by JavaScript -->
+        </ul>
+      </div>
+      
+      <!-- 24h Distribution Tab -->
+      <div class="tab-pane fade" id="distribution" role="tabpanel" aria-labelledby="distribution-tab">
+        <h3 class="section-title">24-Hour Distribution of Patient Flow Events</h3>
+        <p>This analysis shows the distribution of different events throughout the 24-hour day cycle, including booking time, allocation time, registration time, and arrival time.</p>
+        
+        <div class="chart-container">
+          <canvas id="hourlyDistributionChart"></canvas>
+        </div>
+        
+        <div class="observations">
+          <h3 class="section-title">Observations</h3>
+          <ul id="distributionObservations">
+            <!-- Will be populated by JavaScript -->
+          </ul>
+          
+          <h3 class="section-title">Implications for Quality Improvement</h3>
+          <ul id="distributionImplications">
+            <!-- Will be populated by JavaScript -->
+          </ul>
+        </div>
+        
+        <div class="stat-methods">
+          <h3 class="section-title">Statistical Methods:</h3>
+          <ol>
+            <li>Descriptive statistics: mean, median, interquartile range (IQR), and 95% confidence intervals.</li>
+            <li>Kruskal-Wallis H test: non-parametric method for comparing medians among multiple independent groups.</li>
+            <li>Circular statistics: specialized methods for analyzing cyclical time data, including Rayleigh test for uniformity.</li>
+          </ol>
         </div>
       </div>
     </div>
-
-    <div class="row mb-4">
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-header">ETD Time by Ward (Minutes)</div>
-          <div class="card-body">
-            <div class="chart-container">
-              <canvas id="etdTimeChart"></canvas>
-            </div>
-            <div class="mt-3">
-              <p><strong>Statistical Analysis:</strong> <span id="etdStatTest"></span></p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-header">Transfer Time by Ward (Minutes)</div>
-          <div class="card-body">
-            <div class="chart-container">
-              <canvas id="transferTimeChart"></canvas>
-            </div>
-            <div class="mt-3">
-              <p><strong>Statistical Analysis:</strong> <span id="transferStatTest"></span></p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header">Hourly Distribution</div>
-          <div class="card-body">
-            <ul class="nav nav-tabs" id="hourlyTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-content" type="button" role="tab" aria-controls="all-content" aria-selected="true">All</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="booking-tab" data-bs-toggle="tab" data-bs-target="#booking-content" type="button" role="tab" aria-controls="booking-content" aria-selected="false">Booking</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="allocation-tab" data-bs-toggle="tab" data-bs-target="#allocation-content" type="button" role="tab" aria-controls="allocation-content" aria-selected="false">Allocation</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="registration-tab" data-bs-toggle="tab" data-bs-target="#registration-content" type="button" role="tab" aria-controls="registration-content" aria-selected="false">Registration</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="arrival-tab" data-bs-toggle="tab" data-bs-target="#arrival-content" type="button" role="tab" aria-controls="arrival-content" aria-selected="false">Arrival</button>
-              </li>
-            </ul>
-            <div class="tab-content p-3" id="hourlyTabContent">
-              <div class="tab-pane fade show active" id="all-content" role="tabpanel" aria-labelledby="all-tab">
-                <div class="chart-container">
-                  <canvas id="allHourlyChart"></canvas>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="booking-content" role="tabpanel" aria-labelledby="booking-tab">
-                <div class="chart-container">
-                  <canvas id="bookingHourlyChart"></canvas>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="allocation-content" role="tabpanel" aria-labelledby="allocation-tab">
-                <div class="chart-container">
-                  <canvas id="allocationHourlyChart"></canvas>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="registration-content" role="tabpanel" aria-labelledby="registration-tab">
-                <div class="chart-container">
-                  <canvas id="registrationHourlyChart"></canvas>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="arrival-content" role="tabpanel" aria-labelledby="arrival-tab">
-                <div class="chart-container">
-                  <canvas id="arrivalHourlyChart"></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row mb-4">
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-header">Peak Admission Hours by Ward</div>
-          <div class="card-body">
-            <div class="chart-container">
-              <canvas id="peakHoursChart"></canvas>
-            </div>
-            <div class="mt-3">
-              <h6>Mean Admission Times:</h6>
-              <ul class="list-group list-group-flush" id="meanAdmissionTimes">
-                <!-- Will be populated by JavaScript -->
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-header">Key Findings & Recommendations</div>
-          <div class="card-body">
-            <ul class="nav nav-tabs" id="findingsTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="findings-tab" data-bs-toggle="tab" data-bs-target="#findings-content" type="button" role="tab" aria-controls="findings-content" aria-selected="true">Findings</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations-content" type="button" role="tab" aria-controls="recommendations-content" aria-selected="false">Recommendations</button>
-              </li>
-            </ul>
-            <div class="tab-content p-3" id="findingsTabContent">
-              <div class="tab-pane fade show active" id="findings-content" role="tabpanel" aria-labelledby="findings-tab">
-                <ul class="findings-list" id="keyFindingsList">
-                  <!-- Will be populated by JavaScript -->
-                </ul>
-              </div>
-              <div class="tab-pane fade" id="recommendations-content" role="tabpanel" aria-labelledby="recommendations-tab">
-                <ul class="recommendations-list" id="recommendationsList">
-                  <!-- Will be populated by JavaScript -->
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <footer class="text-center mt-4 mb-5">
-      <p class="text-muted">Ampang Admission Flow Analysis Dashboard | <span id="footerDate"></span></p>
+    
+    <footer>
+      <p>Ampang Admission Flow Analysis Dashboard | <span id="footerDate"></span></p>
     </footer>
   </div>
 
