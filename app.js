@@ -105,10 +105,6 @@ function initializeOverviewTab(data) {
     <strong>Key Finding:</strong> The transfer process efficiency varies significantly between wards, suggesting opportunities for process standardization.
   `;
   
-  // Correction
-  document.getElementById('correction').innerHTML = `
-    <strong>Correction:</strong> Ward W6D has the highest median ETD time (${data.statistics.etdTime.byWard.W6D.median.toFixed(1)} minutes), not W6B.
-  `;
 }
 
 function createPatientDistributionChart(wardCounts) {
@@ -421,7 +417,6 @@ function initializePeakHoursTab(peakHoursData, circularStats) {
   const peakHoursFindings = document.getElementById('peakHoursFindings');
   peakHoursFindings.innerHTML = `
     <li>Evening hours (18:00-20:00) are peak admission times for most wards</li>
-    <li>W6A has its highest admission peak at 20:00 (18.2% of admissions)</li>
   `;
 }
 
